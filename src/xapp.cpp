@@ -3,7 +3,7 @@
 
 #include <GL/gl3w.h>
 #include <SDL_opengl.h>
-
+#include <gsl/gsl>
 #include <map>
 
 namespace
@@ -14,7 +14,65 @@ namespace
 
 	std::map<SDL_EventType, xapp::event_handler> event_handlers;
 
-	xlog::log appError() { return xlog::log("xapp", xlog::error); }
+	xlog::log appError()
+	{
+		return xlog::log("xapp", xlog::error);
+	}
+
+	// trim from start (in place)
+	static inline void ltrim(std::string &s) {
+	    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+	        return !std::isspace(ch);
+	    }));
+	}
+
+	// trim from end (in place)
+	static inline void rtrim(std::string &s) {
+	    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+	        return !std::isspace(ch);
+	    }).base(), s.end());
+	}
+
+	// trim from both ends (in place)
+	static inline void trim(std::string &s) {
+	    ltrim(s);
+	    rtrim(s);
+	}
+
+	void APIENTRY dbg_message(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam)
+	{
+		char const * src_name = "gl";
+		switch(source)
+		{
+			case GL_DEBUG_SOURCE_API:             src_name = "gl(api)"; break;
+			case GL_DEBUG_SOURCE_APPLICATION:     src_name = "gl(app)"; break;
+			case GL_DEBUG_SOURCE_OTHER:           src_name = "gl(other)"; break;
+			case GL_DEBUG_SOURCE_SHADER_COMPILER: src_name = "gl(shader compiler)"; break;
+			case GL_DEBUG_SOURCE_THIRD_PARTY:     src_name = "gl(third party)"; break;
+			case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   src_name = "gl(window system)"; break;
+		}
+
+		xlog::log_level log_level = xlog::critical;
+		switch(severity)
+		{
+			case GL_DEBUG_SEVERITY_HIGH: log_level = xlog::critical; break;
+			case GL_DEBUG_SEVERITY_MEDIUM: log_level = xlog::error; break;
+			case GL_DEBUG_SEVERITY_LOW: log_level = xlog::warning; break;
+			case GL_DEBUG_SEVERITY_NOTIFICATION: log_level = xlog::message; break;
+		}
+
+		(void)type;
+		(void)id;
+		(void)userParam;
+
+		std::string msg(message, gsl::narrow<std::size_t>(length));
+		trim(msg);
+
+		xlog::log(src_name, log_level) << msg;
+
+		if(severity == GL_DEBUG_SEVERITY_HIGH)
+			abort();
+	}
 }
 
 SDL_Window * xapp::window = nullptr;
@@ -100,6 +158,9 @@ bool xapp::init(xapp::mode mode, options const & opt)
 				xapp::glcontext = nullptr;
 				return false;
 			}
+
+			glDebugMessageCallback(dbg_message, nullptr);
+
 			xlog::log("xapp", xlog::message) << "OpenGL Version: " << glGetString(GL_VERSION);
 			xlog::log("xapp", xlog::message) << "OpenGL Vendor:  " << glGetString(GL_VENDOR);
 			xlog::log("xapp", xlog::message) << "GLSL Version:   " << glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -113,7 +174,13 @@ bool xapp::init(xapp::mode mode, options const & opt)
 
 	xapp::set_event_handler<SDL_QUIT>([](auto const &)
 	{
-		quit = true;
+		xapp::shutdown();
+	});
+
+	xapp::set_event_handler<SDL_KEYDOWN>([](auto const & ev)
+	{
+		if(ev.keysym.sym == SDLK_ESCAPE)
+			xapp::shutdown();
 	});
 
 	init_mode = mode;
@@ -164,4 +231,9 @@ void xapp::set_event_handler(SDL_EventType type, event_handler const & handler)
 void xapp::remove_event_handler(SDL_EventType type)
 {
 	event_handlers.erase(type);
+}
+
+void xapp::shutdown()
+{
+	quit = true;
 }

@@ -11,6 +11,7 @@ QMAKE_CXXFLAGS += -std=c++17
 
 include($$PWD/pri/sdl2.pri)
 include($$PWD/pri/gsl.pri)
+include($$PWD/pri/stb.pri)
 include(/home/felix/projects/gl3w/gl3w.pri)
 
 DEFINES += XGL_ENABLE_GLM
@@ -31,9 +32,11 @@ HEADERS += \
 	$$PWD/include/xgl/detail/program_uniforms.h \
 	$$PWD/include/xapp \
 	$$PWD/include/xcs \
-	$$PWD/include/xlog
+	$$PWD/include/xlog \
+    $$PWD/include/x2d/sprite_batch
 
 SOURCES += \
 	$$PWD/src/xlog.cpp \
 	$$PWD/src/xapp.cpp\
-	$$PWD/src/xcs.cpp
+	$$PWD/src/xcs.cpp \
+    $$PWD/src/sprite_batch.cpp

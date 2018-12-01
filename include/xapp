@@ -58,6 +58,8 @@ namespace xapp
 	bool update();
 
 	void present();
+
+	void shutdown();
 }
 
 

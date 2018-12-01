@@ -1,0 +1,44 @@
+#ifndef XQLIB_SPRITE_BATCH_HPP
+#define XQLIB_SPRITE_BATCH_HPP
+
+#include <glm/glm.hpp>
+#include "../xgl/program"
+#include "../xgl/texture"
+#include "../xgl/vertexarray"
+#include "../xgl/buffer"
+
+namespace x2d
+{
+	struct sprite_batch
+	{
+		struct vertex
+		{
+			glm::vec2 pos;
+			glm::vec2 uv;
+		};
+
+		struct range
+		{
+			xgl::texture2D const & tex;
+			size_t offset;
+			size_t count;
+		};
+
+		xgl::program program;
+		xgl::vertex_array vao;
+		xgl::buffer vertex_buffer;
+		std::vector<vertex> vertices;
+		std::vector<range> ranges;
+		glm::mat4 transform;
+
+		sprite_batch();
+
+		void begin(glm::mat4 const & transform);
+
+		void draw(xgl::texture2D const & tex, glm::vec2 const & pos, glm::vec2 const & size);
+
+		void end();
+	};
+}
+
+#endif // SPRITE_BATCH_HPP

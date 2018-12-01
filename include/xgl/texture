@@ -77,6 +77,14 @@ namespace xgl
 		operator bool() const {
 			return (id != 0);
 		}
+
+		bool operator ==(texture const & other) const {
+			return (id == other.id);
+		}
+
+		bool operator !=(texture const & other) const {
+			return (id != other.id);
+		}
 	};
 
 	using texture1D        = texture<GL_TEXTURE_1D>;
