@@ -1,0 +1,13 @@
+#ifndef XQLIB_TEXTURE_LOADER_HPP
+#define XQLIB_TEXTURE_LOADER_HPP
+
+#include "../xgl/texture"
+#include <string>
+#include <optional>
+
+namespace x2d
+{
+	std::optional<xgl::texture2D> load_texture(std::string const & file);
+}
+
+#endif // TEXTURE_LOADER_HPP

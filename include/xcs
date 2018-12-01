@@ -90,7 +90,7 @@ namespace xcs
 		universe & universe;
 
 		Storage contents;
-		std::unordered_map<unique_id, typename Storage::iterator, unique_id::hash> access;
+		std::unordered_map<unique_id, std::size_t, unique_id::hash> access;
 
 		component_store(struct universe & universe) : universe(universe), contents(), access(100, unique_id::hash{})
 		{
@@ -101,7 +101,7 @@ namespace xcs
 		{
 			auto pos = access.find(ent);
 			if(pos != access.end())
-				return &(*pos->second).second;
+				return &contents[pos->second].second;
 			else
 				return nullptr;
 		}
@@ -115,9 +115,10 @@ namespace xcs
 		{
 			if(auto * ptr = get(ent); ptr != nullptr)
 				return *ptr;
-			auto it = contents.emplace(contents.end(), ent, T { });
-			access[ent] = it;
-			return it->second;
+			auto const idx = contents.size();
+			auto & pair = contents.emplace_back(ent, T { });
+			access[ent] = idx;
+			return pair.second;
 		}
 
 		void add_generic(unique_id ent) override
@@ -130,7 +131,8 @@ namespace xcs
 			auto pos = access.find(ent);
 			if(pos == access.end())
 				return false;
-			std::swap(*pos->second, contents.back());
+			access[contents.back().first] = pos->second;
+			std::swap(contents[pos->second], contents.back());
 			contents.pop_back();
 			access.erase(ent);
 			return true;
@@ -145,12 +147,20 @@ namespace xcs
 			entity_component(struct entity ent, T & c) : entity(ent), component(c) { }
 		};
 
+		struct const_entity_component
+		{
+			entity const entity;
+			T const & component;
+
+			const_entity_component(struct entity ent, T const & c) : entity(ent), component(c) { }
+		};
+
 		struct iterator
 		{
 			component_store * const store;
-			typename Storage::iterator iter;
+			std::size_t iter;
 
-			iterator(component_store * store, typename Storage::iterator iterator) :
+			iterator(component_store * store, std::size_t iterator) :
 				store(store),
 				iter(iterator)
 			{
@@ -158,11 +168,11 @@ namespace xcs
 			}
 
 			entity_component operator* () {
-				return entity_component { entity(store->universe, iter->first), iter->second };
+				return entity_component { entity(store->universe, store->contents[iter].first), store->contents[iter].second };
 			}
 
 			entity_component operator -> () {
-				return entity_component { entity(store->universe, iter->first), iter->second };
+				return (*this);
 			}
 
 			iterator & operator++() {
@@ -187,7 +197,7 @@ namespace xcs
 				return clone;
 			}
 
-			constexpr bool operator== (iterator const & other) const {
+			constexpr bool operator == (iterator const & other) const {
 				return (this->store == other.store)
 					and (this->iter == other.iter);
 			}
@@ -197,8 +207,63 @@ namespace xcs
 			}
 		};
 
-		iterator begin() { return iterator(this, contents.begin()); }
-		iterator end() { return iterator(this, contents.end()); }
+		struct const_iterator
+		{
+			component_store const * const store;
+			std::size_t iter;
+
+			const_iterator(component_store const * store, std::size_t iterator) :
+				store(store),
+				iter(iterator)
+			{
+
+			}
+
+			const_entity_component operator* () {
+				return const_entity_component { entity(store->universe, store->contents[iter].first), store->contents[iter].second };
+			}
+
+			const_entity_component operator -> () {
+				return (*this);
+			}
+
+			const_iterator & operator++() {
+				this->iter++;
+				return *this;
+			}
+
+			iterator & operator--() {
+				this->iter--;
+				return *this;
+			}
+
+			const_iterator operator++(int) {
+				const_iterator clone = *this;
+				this->iter++;
+				return clone;
+			}
+
+			const_iterator operator--(int) {
+				const_iterator clone = *this;
+				this->iter--;
+				return clone;
+			}
+
+			constexpr bool operator == (const_iterator const & other) const {
+				return (this->store == other.store)
+					and (this->iter == other.iter);
+			}
+
+			constexpr bool operator != (const_iterator const & other) const {
+				return !(*this == other);
+			}
+		};
+
+		iterator begin() { return iterator(this, 0); }
+		iterator end() { return iterator(this, contents.size()); }
+
+		const_iterator begin() const { return const_iterator(this, 0); }
+		const_iterator end() const   { return const_iterator(this, contents.size()); }
 
 	};
 
@@ -233,7 +298,11 @@ namespace xcs
 	};
 
 	template<typename T>
-	meta_component<T> const & get_meta_component() = delete;
+	meta_component<T> const & get_meta_component()
+	{
+		static_assert(is_component<T>(), "Type is not a registered component!");
+		throw;
+	}
 
 	#define XCS_REGISTER_COMPONENT(_Type) \
 		template<> inline bool ::xcs::is_component<_Type>() { return true; } \
@@ -387,6 +456,26 @@ namespace xcs
 	inline component_store<T> & get_components(universe & universe)
 	{
 		return universe.get_components<T>();
+	}
+
+	template<typename T>
+	inline component_store<T> const & get_components(universe const & universe)
+	{
+		return universe.get_components<T>();
+	}
+
+	template<typename T>
+	inline void walk_components(universe & universe, std::function<void(entity, T & component)> const & walker)
+	{
+		for(auto pair : universe.get_components<T>())
+			walker(pair.entity, pair.component);
+	}
+
+	template<typename T>
+	inline void walk_components(universe const & universe, std::function<void(entity, T const & component)> const & walker)
+	{
+		for(auto pair : universe.get_components<T>())
+			walker(pair.entity, pair.component);
 	}
 }
 #endif // ECS_HPP

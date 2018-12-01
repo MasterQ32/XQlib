@@ -2,6 +2,30 @@
 
 ## XApp
 
+Simple abstraction layer over SDL window and event system,
+provides fast application setup.
+
+```cpp
+#include <xgl/all>
+#include <xapp>
+
+int main()
+{
+	if(not xapp::init(xapp::opengl))
+		return 1;
+
+	while(xapp::update())
+	{
+		glClearColor(0.0, 0.0, 0.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		xapp::present();
+	}
+
+	return 0;
+}
+```
+
 ## XGL
 thin OpenGL wrapper
 
@@ -69,8 +93,6 @@ void some()
 
 ## XCS
 entity component system
-
-### Example
 
 ```cpp
 #include <xcs>

@@ -33,10 +33,12 @@ HEADERS += \
 	$$PWD/include/xapp \
 	$$PWD/include/xcs \
 	$$PWD/include/xlog \
-    $$PWD/include/x2d/sprite_batch
+    $$PWD/include/x2d/sprite_batch \
+    $$PWD/include/x2d/texture_loader
 
 SOURCES += \
 	$$PWD/src/xlog.cpp \
 	$$PWD/src/xapp.cpp\
 	$$PWD/src/xcs.cpp \
-    $$PWD/src/sprite_batch.cpp
+    $$PWD/src/sprite_batch.cpp \
+    $$PWD/src/texture_loader.cpp

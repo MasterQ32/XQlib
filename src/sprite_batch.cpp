@@ -1,5 +1,8 @@
 #include <x2d/sprite_batch>
 
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 namespace
 {
 	char const * vertex_shader =
@@ -68,7 +71,14 @@ void x2d::sprite_batch::begin(glm::mat4 const & transform)
 	ranges.clear();
 }
 
-void x2d::sprite_batch::draw(xgl::texture2D const & tex, glm::vec2 const & pos, glm::vec2 const & size)
+void x2d::sprite_batch::draw(
+	xgl::texture2D const & tex,
+	glm::vec2 const & position,
+	glm::vec2 const & size,
+	float rotation,
+	glm::vec2 const & center,
+	glm::vec2 const & uv_low,
+	glm::vec2 const & uv_high)
 {
 	glm::vec2 const faces[] =
 	{
@@ -77,9 +87,20 @@ void x2d::sprite_batch::draw(xgl::texture2D const & tex, glm::vec2 const & pos, 
 	};
 
 	auto const offset = vertices.size();
-	for(auto const & uv : faces)
+	for(auto const & xy : faces)
 	{
-		vertices.push_back({ pos + size * uv, uv });
+		using namespace glm;
+		vec3 pos(xy * size, 0);
+
+		pos -= vec3(center, 0);
+		pos = angleAxis(rotation, vec3(0, 0, 1)) * pos;
+		pos += vec3(center, 0);
+
+		vertex vtx;
+		vtx.pos = position + vec2(pos) + center;
+		vtx.uv = uv_low + xy * (uv_high - uv_low);
+
+		vertices.push_back(vtx);
 	}
 	if((ranges.size() == 0) or (ranges.back().tex != tex))
 	{

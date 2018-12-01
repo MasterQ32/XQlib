@@ -35,7 +35,14 @@ namespace x2d
 
 		void begin(glm::mat4 const & transform);
 
-		void draw(xgl::texture2D const & tex, glm::vec2 const & pos, glm::vec2 const & size);
+		void draw(
+		    xgl::texture2D const & tex,
+		    glm::vec2 const & pos,
+		    glm::vec2 const & size,
+		    float rotation            = 0.0f,
+		    glm::vec2 const & center  = glm::vec2(0, 0),
+		    glm::vec2 const & uv_low  = glm::vec2(0, 0),
+		    glm::vec2 const & uv_high = glm::vec2(1, 1));
 
 		void end();
 	};
