@@ -1,0 +1,96 @@
+#pragma once
+
+#include <SDL.h>
+
+#include <string>
+#include <glm/glm.hpp>
+
+#include <functional>
+
+namespace xapp
+{
+	extern SDL_Window * window;
+	extern SDL_Renderer * renderer;
+	extern SDL_GLContext glcontext;
+
+	using event_handler = std::function<void(SDL_Event const &)>;
+
+
+	enum mode
+	{
+		uninitialized = 0,
+		opengl = 1,
+		sdl = 2,
+	};
+
+	struct options
+	{
+		std::string title;
+		glm::ivec2 resolution;
+		bool fullscreen;
+
+		options(std::string const & title = "Untitled XApp", glm::ivec2 resolution = glm::ivec2(1280, 720), bool fullscreen = false);
+	};
+
+	bool init(mode mode, options const & opt = options());
+
+	mode was_init();
+
+	void set_event_handler(SDL_EventType type, event_handler const & handler);
+
+	void remove_event_handler(SDL_EventType type);
+
+	template<SDL_EventType type>
+	struct sdl_event;
+
+	template<SDL_EventType type>
+	typename sdl_event<type>::type const & convert_sdl_event(SDL_Event const & ev);
+
+	template<SDL_EventType type>
+	void set_event_handler(std::function<void(typename sdl_event<type>::type const &)> const & handler)
+	{
+		set_event_handler(type, [=](SDL_Event const & ev)
+		{
+			handler(convert_sdl_event<type>(ev));
+		});
+	}
+
+	bool update();
+
+	void present();
+}
+
+
+
+
+
+namespace xapp
+{
+#define XAPP_EV(_Enum,_Subscript) \
+	template<> struct sdl_event<_Enum> { using type = decltype(SDL_Event::_Subscript); }; \
+	template<> inline typename sdl_event<_Enum>::type const & convert_sdl_event<_Enum>(SDL_Event const & ev) \
+	{ \
+		return ev._Subscript; \
+	}
+
+	XAPP_EV(SDL_WINDOWEVENT,     window)
+	XAPP_EV(SDL_DISPLAYEVENT,    display)
+	XAPP_EV(SDL_KEYDOWN,         key)
+	XAPP_EV(SDL_KEYUP,           key)
+	XAPP_EV(SDL_TEXTEDITING,     edit)
+	XAPP_EV(SDL_TEXTINPUT,       text)
+	XAPP_EV(SDL_MOUSEMOTION,     motion)
+	XAPP_EV(SDL_MOUSEBUTTONDOWN, button)
+	XAPP_EV(SDL_MOUSEBUTTONUP,   button)
+	XAPP_EV(SDL_MOUSEWHEEL,      wheel)
+	// ...
+	XAPP_EV(SDL_QUIT,            quit)
+	// SDL_USEREVENT is ignored here!
+	XAPP_EV(SDL_SYSWMEVENT,      syswm)
+	XAPP_EV(SDL_FINGERDOWN,      tfinger)
+	XAPP_EV(SDL_FINGERUP,        tfinger)
+	XAPP_EV(SDL_FINGERMOTION,    tfinger)
+	// ...
+
+#undef XAPP_EV
+}
