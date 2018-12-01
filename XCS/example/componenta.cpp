@@ -1,0 +1,2 @@
+#include "componenta.hpp"
+

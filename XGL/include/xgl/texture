@@ -1,0 +1,91 @@
+#ifndef XGL_TEXTURE_HPP
+#define XGL_TEXTURE_HPP
+
+#include <GL/gl3w.h>
+#include <utility>
+#include <gsl/gsl>
+
+namespace xgl
+{
+	template<GLenum TARGET>
+	struct texture
+	{
+		static constexpr GLenum target = TARGET;
+		GLuint id;
+
+	public:
+		texture() : id(0) {
+			glCreateTextures(target, 1, &id);
+		}
+
+		texture(texture const &) = delete;
+
+		texture(texture && other) : id(other.id) {
+			other.id = 0;
+		}
+
+		~texture()
+		{
+			if(id != 0)
+				glDeleteTextures(1, &id);
+		}
+	public:
+		void bind(GLuint unit) const {
+			glBindTextureUnit(unit, id);
+		}
+
+		void generateMipMaps() {
+			glGenerateTextureMipmap(id);
+		}
+
+		void storage1D(size_t levels, GLenum internalFormat, size_t width) {
+			glTextureStorage1D(id, gsl::narrow<GLsizei>(levels), internalFormat, gsl::narrow<GLsizei>(width));
+		}
+
+		void storage2D(size_t levels, GLenum internalFormat, size_t width, size_t height) {
+			glTextureStorage2D(id, gsl::narrow<GLsizei>(levels), internalFormat, gsl::narrow<GLsizei>(width), gsl::narrow<GLsizei>(height));
+		}
+
+		void storage3D(size_t levels, GLenum internalFormat, size_t width, size_t height, size_t depth) {
+			glTextureStorage3D(id, gsl::narrow<GLsizei>(levels), internalFormat, gsl::narrow<GLsizei>(width), gsl::narrow<GLsizei>(height), gsl::narrow<GLsizei>(depth));
+		}
+
+		void subImage1D(size_t level, GLint xoffset, size_t width, GLenum format, GLenum type, const void *pixels) {
+			glTextureSubImage1D(id, gsl::narrow<GLsizei>(level), xoffset, gsl::narrow<GLsizei>(width), format, type, pixels);
+		}
+
+		void subImage2D(size_t level, size_t xoffset, size_t yoffset, size_t width, size_t height, GLenum format, GLenum type, const void *pixels) {
+			glTextureSubImage2D(id, gsl::narrow<GLsizei>(level), gsl::narrow<GLint>(xoffset), gsl::narrow<GLint>(yoffset), gsl::narrow<GLsizei>(width), gsl::narrow<GLsizei>(height), format, type, pixels);
+		}
+
+		void subImage3D(size_t level, size_t xoffset, size_t yoffset, size_t zoffset, size_t width, size_t height, size_t depth, GLenum format, GLenum type, const void *pixels) {
+			glTextureSubImage3D(id, gsl::narrow<GLsizei>(level), gsl::narrow<GLint>(xoffset), gsl::narrow<GLint>(yoffset), gsl::narrow<GLint>(zoffset), gsl::narrow<GLsizei>(width), gsl::narrow<GLsizei>(height), gsl::narrow<GLsizei>(depth), format, type, pixels);
+		}
+
+		void parameter(GLenum key, GLint value) {
+			glTextureParameteri(id, key, value);
+		}
+
+		void parameter(GLenum key, GLfloat value) {
+			glTextureParameterf(id, key, value);
+		}
+	public:
+		operator GLuint () const {
+			return id;
+		}
+
+		operator bool() const {
+			return (id != 0);
+		}
+	};
+
+	using texture1D        = texture<GL_TEXTURE_1D>;
+	using texture2D        = texture<GL_TEXTURE_2D>;
+	using texture3D        = texture<GL_TEXTURE_3D>;
+	using texture1DArray   = texture<GL_TEXTURE_1D_ARRAY>;
+	using texture2DArray   = texture<GL_TEXTURE_2D_ARRAY>;
+	using textureCUBE      = texture<GL_TEXTURE_CUBE_MAP>;
+	using textureCUBEArray = texture<GL_TEXTURE_CUBE_MAP_ARRAY>;
+}
+
+#endif

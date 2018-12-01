@@ -1,0 +1,19 @@
+#include <glm/glm.hpp>
+
+namespace xm2d
+{
+	struct line
+	{
+		glm::vec2 start;
+		glm::vec2 end;
+
+		line(glm::vec2 start, glm::vec2 end) :
+		    start(start),
+		    end(end)
+		{
+
+		}
+
+		float length() const { return glm::distance(end, start); }
+	};
+}

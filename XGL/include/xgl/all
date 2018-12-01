@@ -1,0 +1,10 @@
+#ifndef XGL_HPP
+#define XGL_HPP
+
+#include "texture"
+#include "buffer"
+#include "vertexarray"
+#include "shader"
+#include "program"
+
+#endif

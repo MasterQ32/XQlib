@@ -1,0 +1,87 @@
+#ifndef XGL_VERTEXARRAY_HPP
+#define XGL_VERTEXARRAY_HPP
+
+#include "buffer"
+
+#include <GL/gl3w.h>
+#include <utility>
+#include <gsl/gsl>
+
+
+namespace xgl
+{
+	struct vertex_array
+	{
+		GLuint id;
+
+	public:
+		vertex_array() {
+			glCreateVertexArrays(1, &id);
+		}
+
+		vertex_array(vertex_array const &) = delete;
+
+		vertex_array(vertex_array && other) : id(other.id) {
+			other.id = 0;
+		}
+
+		~vertex_array()
+		{
+			if(id != 0)
+				glDeleteVertexArrays(1, &id);
+		}
+	public:
+		void bind() {
+			glBindVertexArray(id);
+		}
+
+		void enableAttribute(unsigned int index) {
+			glEnableVertexArrayAttrib(id, index);
+		}
+
+		void disableAttribute(unsigned int index) {
+			glDisableVertexArrayAttrib(id, index);
+		}
+
+		void attributeFormat(unsigned int index, int size, GLenum format, GLuint reloffset, bool normalize = false) {
+			glVertexArrayAttribFormat(
+				id,
+				index,
+				size,
+				format,
+				normalize ? GL_TRUE : GL_FALSE,
+				reloffset);
+		}
+
+		void bindAttribute(unsigned int attribute, unsigned int binding) {
+			glVertexArrayAttribBinding(id, attribute, binding);
+		}
+
+		void vertexBuffer(unsigned int binding, GLuint buffer, size_t offset, size_t stride) {
+			glVertexArrayVertexBuffer(id, binding, buffer, gsl::narrow<GLsizei>(offset), gsl::narrow<GLsizei>(stride));
+		}
+
+		void vertexBuffer(unsigned int binding, xgl::buffer const & buffer, size_t offset, size_t stride) {
+			glVertexArrayVertexBuffer(id, binding, buffer, gsl::narrow<GLsizei>(offset), gsl::narrow<GLsizei>(stride));
+		}
+
+		void elementBuffer(GLuint buffer) {
+			glVertexArrayElementBuffer(id, buffer);
+		}
+
+		void elementBuffer(xgl::buffer const & buffer) {
+			glVertexArrayElementBuffer(id, buffer);
+		}
+
+	public:
+		operator GLuint () const {
+			return id;
+		}
+
+		operator bool() const {
+			return (id != 0);
+		}
+	};
+}
+
+#endif

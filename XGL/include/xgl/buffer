@@ -1,0 +1,77 @@
+#ifndef XGL_BUFFER_HPP
+#define XGL_BUFFER_HPP
+
+#include <GL/gl3w.h>
+#include <utility>
+#include <vector>
+
+namespace xgl
+{
+	struct buffer
+	{
+		GLuint id;
+
+	public:
+		buffer() {
+			glCreateBuffers(1, &id);
+		}
+
+		buffer(buffer const &) = delete;
+
+		buffer(buffer && other) : id(other.id) {
+			other.id = 0;
+		}
+
+		~buffer()
+		{
+			if(id != 0)
+				glDeleteBuffers(1, &id);
+		}
+	public:
+		void storage(GLsizei size, GLbitfield flags) {
+			glNamedBufferStorage(id, size, nullptr, flags);
+		}
+
+		void storage(GLsizei size, const void *data, GLbitfield flags) {
+			glNamedBufferStorage(id, size, data, flags);
+		}
+
+		void data(GLsizei size, const void *data, GLenum usage = GL_STATIC_DRAW) {
+			glNamedBufferData(id, size, data, usage);
+		}
+
+		template<typename T>
+		void data(T const * data, size_t count, GLenum usage = GL_STATIC_DRAW) {
+			glNamedBufferData(id, sizeof(T) * count, data, usage);
+		}
+
+		template<typename T, size_t count>
+		void data(T const (&data)[count], GLenum usage = GL_STATIC_DRAW) {
+			glNamedBufferData(id, sizeof(T) * count, data, usage);
+		}
+
+		template<typename T>
+		void data(std::vector<T> const & data, GLenum usage = GL_STATIC_DRAW) {
+			glNamedBufferData(id, sizeof(T) * data.size(), data.data(), usage);
+		}
+
+		void subData(GLsizei size, const void *data) {
+			glNamedBufferSubData(id, 0, size, data);
+		}
+
+		void subData(GLintptr offset, GLsizei size, const void *data) {
+			glNamedBufferSubData(id, offset, size, data);
+		}
+
+	public:
+		operator GLuint () const {
+			return id;
+		}
+
+		operator bool() const {
+			return (id != 0);
+		}
+	};
+}
+
+#endif

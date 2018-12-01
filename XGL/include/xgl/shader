@@ -1,0 +1,70 @@
+#ifndef XGL_SHADER_HPP
+#define XGL_SHADER_HPP
+
+#include <GL/gl3w.h>
+#include <utility>
+#include <string>
+#include <gsl/gsl>
+
+namespace xgl
+{
+	struct shader
+	{
+		GLuint id;
+
+	public:
+		explicit shader(GLenum shaderType) : id(glCreateShader(shaderType)) {
+
+		}
+
+		shader(shader const &) = delete;
+
+		shader(shader && other) : id(other.id) {
+			other.id = 0;
+		}
+
+		~shader()
+		{
+			if(id != 0)
+				glDeleteShader(id);
+		}
+	public:
+		void source(char const * str) {
+			glShaderSource(id, 1, &str, nullptr);
+		}
+
+		void source(char const * str, size_t len) {
+			GLint _len = gsl::narrow<GLint>(len);
+			glShaderSource(id, 1, &str, &_len);
+		}
+
+		void source(std::string const & str) {
+			auto const * src = str.data();
+			GLint len = gsl::narrow<GLint>(str.size());
+			glShaderSource(id, 1, &src, &len);
+		}
+
+		void source(GLsizei count, GLchar const * const * sources) {
+			glShaderSource(id, count, sources, nullptr);
+		}
+
+		void source(GLsizei count, GLchar const * const * sources, GLint const * lengths ) {
+			glShaderSource(id, count, sources, lengths);
+		}
+
+		void compile() {
+			glCompileShader(id);
+		}
+
+	public:
+		operator GLuint () const {
+			return id;
+		}
+
+		operator bool() const {
+			return (id != 0);
+		}
+	};
+}
+
+#endif // SHADER_HPP

@@ -1,0 +1,105 @@
+#ifndef XGL_PROGRAM_HPP
+#define XGL_PROGRAM_HPP
+
+#include <GL/gl3w.h>
+#include <utility>
+#include <map>
+#include <string>
+#include <iostream>
+
+#include "shader"
+
+#ifdef XGL_ENABLE_GLM
+#include <glm/glm.hpp>
+#endif
+
+namespace xgl
+{
+	struct program
+	{
+		GLuint id;
+		mutable std::map<std::string, GLint> uniformCache;
+
+	public:
+		program() : id(glCreateProgram()) {
+
+		}
+
+		program(program const &) = delete;
+
+		program(program && other) : id(other.id) {
+			other.id = 0;
+		}
+
+		~program()
+		{
+			if(id != 0)
+				glDeleteProgram(id);
+		}
+	public:
+		void use() {
+			glUseProgram(id);
+		}
+
+		void link() {
+			glLinkProgram(id);
+			uniformCache.clear();
+		}
+
+		void attach(GLuint shader) {
+			glAttachShader(id, shader);
+		}
+
+		void attach(xgl::shader const & sh) {
+			glAttachShader(id, sh.id);
+		}
+
+		void detach(GLuint shader) {
+			glDetachShader(id, shader);
+		}
+
+		void detach(xgl::shader const & sh) {
+			glDetachShader(id, sh.id);
+		}
+
+		GLint getUniformLocation(char const * name) {
+			return getUniformLocation(std::string(name));
+		}
+
+		GLint getUniformLocation(std::string const & name) {
+			auto it = uniformCache.find(name);
+			if(it == uniformCache.end()) {
+				auto loc = glGetUniformLocation(id, name.c_str());
+				if(loc == -1)
+					std::cerr << "Warning: Could not find uniform '" << name << "'." << std::endl;
+				uniformCache.emplace(name, loc);
+				return loc;
+			} else {
+				return it->second;
+			}
+		}
+
+	public:
+#include "detail/program_uniforms.h"
+
+	public:
+		program & operator << (xgl::shader const & sh) {
+			attach(sh);
+			return *this;
+		}
+
+		program & operator >> (xgl::shader const & sh) {
+			detach(sh);
+			return *this;
+		}
+	public:
+		operator GLuint () const {
+			return id;
+		}
+
+		operator bool() const {
+			return (id != 0);
+		}
+	};
+}
+#endif // PROGRAM_HPP
