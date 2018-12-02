@@ -13,6 +13,8 @@
 #include <tuple>
 #include <list>
 
+#include "xlog"
+
 namespace xcs
 {
 	struct entity;
@@ -81,6 +83,8 @@ namespace xcs
 		virtual bool exists(unique_id id) = 0;
 
 		virtual bool remove(unique_id id) = 0;
+
+		virtual void cleanup() = 0;
 	};
 
 	template<typename T>
@@ -93,6 +97,7 @@ namespace xcs
 
 		Storage contents;
 		std::unordered_map<unique_id, typename Storage::iterator, unique_id::hash> access;
+		std::vector<typename Storage::iterator> delete_list;
 
 		component_store(struct universe & universe) :
 		  universe(universe),
@@ -120,10 +125,13 @@ namespace xcs
 
 		T & add(unique_id ent)
 		{
+			if(ent.value == 0)
+				abort();
+
 			if(auto * ptr = get(ent); ptr != nullptr)
 				return *ptr;
 			auto it = contents.emplace(contents.end(), ent, T { });
-			access[ent] = it;
+			access.emplace(ent, it);
 			return it->second;
 		}
 
@@ -137,9 +145,17 @@ namespace xcs
 			auto pos = access.find(ent);
 			if(pos == access.end())
 				return false;
-			contents.erase(pos->second);
-			access.erase(ent);
+			pos->second->first = unique_id();
+			delete_list.push_back(pos->second);
+			access.erase(pos);
 			return true;
+		}
+
+		void cleanup() override
+		{
+			for(auto it : delete_list)
+				contents.erase(it);
+			delete_list.clear();
 		}
 
 	public:
@@ -207,7 +223,6 @@ namespace xcs
 		const_iterator begin() const { return const_iterator(this, contents.begin()); }
 		const_iterator end()   const { return const_iterator(this, contents.end()); }
 	};
-
 
 	struct meta_component_base
 	{
@@ -306,6 +321,13 @@ namespace xcs
 					pair.second->remove(ent.id);
 			}
 			return existed;
+		}
+
+	public:
+		void cleanup()
+		{
+			for(auto & pair : this->component_stores)
+				pair.second->cleanup();
 		}
 
 	private:
