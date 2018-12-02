@@ -139,125 +139,69 @@ namespace xcs
 		}
 
 	public:
-		struct entity_component
+		template<typename TComponent>
+		struct entity_component_t
 		{
 			entity const entity;
-			T & component;
+			TComponent & component;
 
-			entity_component(struct entity ent, T & c) : entity(ent), component(c) { }
+			entity_component_t(struct entity ent, TComponent & c) : entity(ent), component(c) { }
 		};
 
-		struct const_entity_component
-		{
-			entity const entity;
-			T const & component;
+		using entity_component = entity_component_t<T>;
+		using const_entity_component = entity_component_t<const T>;
 
-			const_entity_component(struct entity ent, T const & c) : entity(ent), component(c) { }
-		};
-
-		struct iterator
+		template<typename TStore, typename TNode>
+		struct iterator_t
 		{
-			component_store * const store;
+			TStore * const store;
 			std::size_t iter;
 
-			iterator(component_store * store, std::size_t iterator) :
+			iterator_t(TStore * store, std::size_t iterator) :
 				store(store),
 				iter(iterator)
 			{
 
 			}
 
-			entity_component operator* () {
-				return entity_component { entity(store->universe, store->contents[iter].first), store->contents[iter].second };
+			TNode operator* () {
+				return TNode { entity(store->universe, store->contents[iter].first), store->contents[iter].second };
 			}
 
-			entity_component operator -> () {
-				return (*this);
-			}
-
-			iterator & operator++() {
+			iterator_t & operator++() {
 				this->iter++;
 				return *this;
 			}
 
-			iterator & operator--() {
+			iterator_t & operator--() {
 				this->iter--;
 				return *this;
 			}
 
-			iterator operator++(int) {
-				iterator clone = *this;
+			iterator_t operator++(int) {
+				iterator_t clone = *this;
 				this->iter++;
 				return clone;
 			}
 
-			iterator operator--(int) {
-				iterator clone = *this;
+			iterator_t operator--(int) {
+				iterator_t clone = *this;
 				this->iter--;
 				return clone;
 			}
 
-			constexpr bool operator == (iterator const & other) const {
+			constexpr bool operator == (iterator_t const & other) const {
 				return (this->store == other.store)
 					and (this->iter == other.iter);
 			}
 
-			constexpr bool operator != (iterator const & other) const {
+			constexpr bool operator != (iterator_t const & other) const {
 				return !(*this == other);
 			}
 		};
 
-		struct const_iterator
-		{
-			component_store const * const store;
-			std::size_t iter;
-
-			const_iterator(component_store const * store, std::size_t iterator) :
-				store(store),
-				iter(iterator)
-			{
-
-			}
-
-			const_entity_component operator* () {
-				return const_entity_component { entity(store->universe, store->contents[iter].first), store->contents[iter].second };
-			}
-
-			const_entity_component operator -> () {
-				return (*this);
-			}
-
-			const_iterator & operator++() {
-				this->iter++;
-				return *this;
-			}
-
-			iterator & operator--() {
-				this->iter--;
-				return *this;
-			}
-
-			const_iterator operator++(int) {
-				const_iterator clone = *this;
-				this->iter++;
-				return clone;
-			}
-
-			const_iterator operator--(int) {
-				const_iterator clone = *this;
-				this->iter--;
-				return clone;
-			}
-
-			constexpr bool operator == (const_iterator const & other) const {
-				return (this->store == other.store)
-					and (this->iter == other.iter);
-			}
-
-			constexpr bool operator != (const_iterator const & other) const {
-				return !(*this == other);
-			}
-		};
+		using iterator = iterator_t<component_store, entity_component>;
+		using const_iterator = iterator_t<const component_store, const_entity_component>;
 
 		iterator begin() { return iterator(this, 0); }
 		iterator end() { return iterator(this, contents.size()); }

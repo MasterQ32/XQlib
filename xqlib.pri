@@ -12,7 +12,7 @@ QMAKE_CXXFLAGS += -std=c++17
 include($$PWD/pri/sdl2.pri)
 include($$PWD/pri/gsl.pri)
 include($$PWD/pri/stb.pri)
-include(/home/felix/projects/gl3w/gl3w.pri)
+include($$PWD/pri/gl3w.pri)
 
 DEFINES += XGL_ENABLE_GLM
 
