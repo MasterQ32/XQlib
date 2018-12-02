@@ -28,7 +28,7 @@ namespace xcs
 		unsigned long const value;
 
 		constexpr unique_id() noexcept : value(0) { }
-		explicit constexpr unique_id(unsigned long value) noexcept : value(value) { }
+		explicit constexpr unique_id(unsigned long _value) noexcept : value(_value) { }
 		constexpr unique_id(unique_id const & other) noexcept = default;
 		constexpr unique_id(unique_id && other) noexcept = default;
 		~unique_id() noexcept = default;
@@ -71,12 +71,12 @@ namespace xcs
 		universe & universe;
 		unique_id const id;
 
-		explicit entity(struct universe & universe, unique_id id) : universe(universe), id(id) { }
+		explicit entity(struct universe & _universe, unique_id _id) : universe(_universe), id(_id) { }
 	};
 
 	struct component_store_base
 	{
-		virtual ~component_store_base() noexcept = default;
+		virtual ~component_store_base() noexcept;
 
 		virtual void add_generic(unique_id ent) = 0;
 
@@ -99,10 +99,10 @@ namespace xcs
 		std::unordered_map<unique_id, typename Storage::iterator, unique_id::hash> access;
 		std::vector<typename Storage::iterator> delete_list;
 
-		component_store(struct universe & universe) :
-		  universe(universe),
+		component_store(struct universe & _universe) :
+		  universe(_universe),
 		  contents(),
-		  access(100, unique_id::hash{})
+		  access(1000, unique_id::hash{})
 		{
 
 		}
@@ -171,9 +171,9 @@ namespace xcs
 			TStore * const store;
 			TIterator iter;
 
-			iterator_t(TStore * store, TIterator iterator) :
-				store(store),
-				iter(iterator)
+			iterator_t(TStore * _store, TIterator _iterator) :
+				store(_store),
+				iter(_iterator)
 			{
 
 			}

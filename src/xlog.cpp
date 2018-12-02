@@ -18,15 +18,15 @@ void xlog::set_verbosity(log_level min)
 	min_level = min;
 }
 
-xlog::log::log(xlog::log_level level) :
-  level(level),
+xlog::log::log(xlog::log_level lvl) :
+  level(lvl),
   text()
 {
 
 }
 
-xlog::log::log(char const * prefix, xlog::log_level level) :
-  level(level),
+xlog::log::log(char const * prefix, xlog::log_level lvl) :
+  level(lvl),
   text()
 {
 	text << prefix << ": ";

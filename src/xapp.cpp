@@ -79,10 +79,10 @@ SDL_Window * xapp::window = nullptr;
 SDL_Renderer * xapp::renderer = nullptr;
 SDL_GLContext xapp::glcontext = nullptr;
 
-xapp::options::options(std::string const & title, glm::ivec2 resolution, bool fullscreen) :
-  title(title),
-  resolution(resolution),
-  fullscreen(fullscreen)
+xapp::options::options(std::string const & _title, glm::ivec2 _resolution, bool _fullscreen) :
+  title(_title),
+  resolution(_resolution),
+  fullscreen(_fullscreen)
 {
 
 }

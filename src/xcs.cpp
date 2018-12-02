@@ -6,8 +6,8 @@ namespace
 	xcs::meta_component_base const * first_meta_component = nullptr;
 }
 
-xcs::meta_component_base::meta_component_base(std::string const & name) noexcept :
-	name(name),
+xcs::meta_component_base::meta_component_base(std::string const & _name) noexcept :
+	name(_name),
 	id(++next_component_type_id),
 	next(first_meta_component)
 {
@@ -34,4 +34,10 @@ xcs::meta_component_base const & xcs::meta_component_base::by_name(std::string c
 	if(auto const * mc = find(name); mc != nullptr)
 		return *mc;
 	throw std::invalid_argument("component " + name + "does not exist");
+}
+
+
+xcs::component_store_base::~component_store_base() noexcept
+{
+
 }

@@ -1,4 +1,8 @@
-WARNINGS=-Werror=sign-promo -Werror=wrong-ident
+WARNINGS= \
+	-Weverything \
+	-Wno-c++98-compat -Wno-c++98-compat-pedantic \
+	-Wno-padded \
+	-pedantic
 
 
 # Setup all warnings
@@ -33,8 +37,8 @@ HEADERS += \
 	$$PWD/include/xapp \
 	$$PWD/include/xcs \
 	$$PWD/include/xlog \
-    $$PWD/include/x2d/sprite_batch \
-    $$PWD/include/x2d/texture_loader
+	$$PWD/include/x2d/sprite_batch \
+	$$PWD/include/x2d/texture_loader
 
 SOURCES += \
 	$$PWD/src/xlog.cpp \
