@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <tuple>
 
 namespace xcs
 {
@@ -140,13 +141,7 @@ namespace xcs
 
 	public:
 		template<typename TComponent>
-		struct entity_component_t
-		{
-			entity const entity;
-			TComponent & component;
-
-			entity_component_t(struct entity ent, TComponent & c) : entity(ent), component(c) { }
-		};
+		using entity_component_t = std::tuple<const entity, TComponent &>;
 
 		using entity_component = entity_component_t<T>;
 		using const_entity_component = entity_component_t<const T>;
@@ -406,20 +401,6 @@ namespace xcs
 	inline component_store<T> const & get_components(universe const & universe)
 	{
 		return universe.get_components<T>();
-	}
-
-	template<typename T>
-	inline void walk_components(universe & universe, std::function<void(entity, T & component)> const & walker)
-	{
-		for(auto pair : universe.get_components<T>())
-			walker(pair.entity, pair.component);
-	}
-
-	template<typename T>
-	inline void walk_components(universe const & universe, std::function<void(entity, T const & component)> const & walker)
-	{
-		for(auto pair : universe.get_components<T>())
-			walker(pair.entity, pair.component);
 	}
 }
 #endif // ECS_HPP
