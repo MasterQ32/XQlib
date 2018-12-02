@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <list>
 
 namespace xcs
 {
@@ -86,23 +87,28 @@ namespace xcs
 	struct component_store : component_store_base
 	{
 		static_assert(is_component<T>, "T must be a registered component type!");
-		using Storage = std::vector<std::pair<unique_id, T>>;
+		using Storage = std::list<std::pair<unique_id, T>>;
 
 		universe & universe;
 
 		Storage contents;
-		std::unordered_map<unique_id, std::size_t, unique_id::hash> access;
+		std::unordered_map<unique_id, typename Storage::iterator, unique_id::hash> access;
 
-		component_store(struct universe & universe) : universe(universe), contents(), access(100, unique_id::hash{})
+		component_store(struct universe & universe) :
+		  universe(universe),
+		  contents(),
+		  access(100, unique_id::hash{})
 		{
+
 		}
 		~component_store() noexcept override = default;
+
 	public:
 		T * get(unique_id ent)
 		{
 			auto pos = access.find(ent);
 			if(pos != access.end())
-				return &contents[pos->second].second;
+				return &pos->second->second; // dereference iterator to object and return address of it
 			else
 				return nullptr;
 		}
@@ -116,10 +122,9 @@ namespace xcs
 		{
 			if(auto * ptr = get(ent); ptr != nullptr)
 				return *ptr;
-			auto const idx = contents.size();
-			auto & pair = contents.emplace_back(ent, T { });
-			access[ent] = idx;
-			return pair.second;
+			auto it = contents.emplace(contents.end(), ent, T { });
+			access[ent] = it;
+			return it->second;
 		}
 
 		void add_generic(unique_id ent) override
@@ -132,9 +137,7 @@ namespace xcs
 			auto pos = access.find(ent);
 			if(pos == access.end())
 				return false;
-			access[contents.back().first] = pos->second;
-			std::swap(contents[pos->second], contents.back());
-			contents.pop_back();
+			contents.erase(pos->second);
 			access.erase(ent);
 			return true;
 		}
@@ -146,13 +149,13 @@ namespace xcs
 		using entity_component = entity_component_t<T>;
 		using const_entity_component = entity_component_t<const T>;
 
-		template<typename TStore, typename TNode>
+		template<typename TStore, typename TNode, typename TIterator>
 		struct iterator_t
 		{
 			TStore * const store;
-			std::size_t iter;
+			TIterator iter;
 
-			iterator_t(TStore * store, std::size_t iterator) :
+			iterator_t(TStore * store, TIterator iterator) :
 				store(store),
 				iter(iterator)
 			{
@@ -160,7 +163,7 @@ namespace xcs
 			}
 
 			TNode operator* () {
-				return TNode { entity(store->universe, store->contents[iter].first), store->contents[iter].second };
+				return TNode { entity(store->universe, iter->first), iter->second };
 			}
 
 			iterator_t & operator++() {
@@ -195,15 +198,14 @@ namespace xcs
 			}
 		};
 
-		using iterator = iterator_t<component_store, entity_component>;
-		using const_iterator = iterator_t<const component_store, const_entity_component>;
+		using iterator = iterator_t<component_store, entity_component, typename Storage::iterator>;
+		using const_iterator = iterator_t<const component_store, const_entity_component, typename Storage::const_iterator>;
 
-		iterator begin() { return iterator(this, 0); }
-		iterator end() { return iterator(this, contents.size()); }
+		iterator begin() { return iterator(this, contents.begin()); }
+		iterator end()   { return iterator(this, contents.end()); }
 
-		const_iterator begin() const { return const_iterator(this, 0); }
-		const_iterator end() const   { return const_iterator(this, contents.size()); }
-
+		const_iterator begin() const { return const_iterator(this, contents.begin()); }
+		const_iterator end()   const { return const_iterator(this, contents.end()); }
 	};
 
 
