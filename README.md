@@ -107,13 +107,14 @@ namespace SomeSystem
 {
 	void update(xcs::universe & universe)
 	{
-		for(auto element : xcs::get_components<SomeComponent>(universe))
+		for(auto [ entity, component ]: xcs::get_components<SomeComponent>(universe))
 		{
 			std::cout
-					<< element.entity.id
+					<< entity.id
 			    << " => ("
-			    << element.component.a
-			    << ", " << element.component.b
+			    << component.a
+			    << ", "
+					<< component.b
 			    << ")"
 			    << std::endl
 			    ;
