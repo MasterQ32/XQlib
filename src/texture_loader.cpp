@@ -1,4 +1,4 @@
-#include "../include/x2d/texture_loader"
+#include "../include/xgraphics/texture_loader"
 #include "../include/xlog"
 
 #include <memory>
@@ -6,7 +6,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-std::optional<xgl::texture2D> x2d::load_texture(std::string const & file)
+std::optional<xgl::texture2D> xgraphics::load_texture(std::string const & file)
 {
 	int _w, _h;
 	std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> mem {

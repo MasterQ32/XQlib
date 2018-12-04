@@ -7,7 +7,7 @@
 #include "../xgl/vertexarray"
 #include "../xgl/buffer"
 
-namespace x2d
+namespace xgraphics
 {
 	struct sprite_batch
 	{

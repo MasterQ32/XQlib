@@ -1,0 +1,84 @@
+#ifndef XQLIB_DEBUG_DRAW_HPP
+#define XQLIB_DEBUG_DRAW_HPP
+
+#include <glm/glm.hpp>
+#include "../xgl/program"
+#include "../xgl/texture"
+#include "../xgl/vertexarray"
+#include "../xgl/buffer"
+
+namespace xgraphics
+{
+	template<typename T>
+	static inline glm::vec4 to_debug_color(T const & val)
+	{
+		struct ColorPack {
+			unsigned r1 : 4;
+			unsigned g1 : 4;
+			unsigned b1 : 4;
+			unsigned r0 : 4;
+			unsigned g0 : 4;
+			unsigned b0 : 4;
+		};
+
+		ColorPack c;
+		if constexpr (sizeof(ColorPack) <= sizeof(val))
+		{
+			memcpy(&c, &val, sizeof(ColorPack));
+		}
+		else
+		{
+			uintptr_t ptr = reinterpret_cast<uintptr_t>(&val);
+			auto const hash = std::hash<uintptr_t>()(ptr);
+			static_assert(sizeof(ColorPack) <= sizeof(hash));
+			memcpy(&c, &hash, sizeof(ColorPack));
+		}
+
+		return glm::vec4(
+			((c.r1 << 4) | c.r0) / 255.0f,
+			((c.g1 << 4) | c.g0) / 255.0f,
+			((c.b1 << 4) | c.b0) / 255.0f,
+			1.0f);
+	}
+
+	struct debug_draw
+	{
+		struct vertex
+		{
+			glm::vec3 position;
+			glm::vec4 color;
+		};
+
+		xgl::buffer vertex_buffer;
+		xgl::vertex_array vao;
+		xgl::program program;
+
+		std::vector<vertex> point_vertices;
+		std::vector<vertex> line_vertices;
+		std::vector<vertex> tris_vertices;
+
+		bool autoClear;
+
+		float pointSize;
+
+		explicit debug_draw(bool autoClear = true);
+
+		void point(glm::vec3 const & p, glm::vec4 const & c = glm::vec4(1.0, 0.0, 0.0, 1.0));
+
+		void line(glm::vec3 const & p0, glm::vec3 const & p1, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
+
+		void line(glm::vec3 const & p0, glm::vec4 const & c0, glm::vec3 const & p1, glm::vec4 const & c1);
+
+		void tris(glm::vec3 const & p0, glm::vec3 const & p1, glm::vec3 const & p2, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
+
+		void aabb(glm::vec3 const & min, glm::vec3 const & max, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
+
+		void box(glm::vec3 const & min, glm::vec3 const & max, glm::mat4 const & transform, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
+
+		void draw(glm::mat4 const & transform);
+
+		void clear();
+	};
+}
+
+#endif // XQLIB_DEBUG_DRAW_HPP

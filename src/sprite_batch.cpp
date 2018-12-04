@@ -1,4 +1,4 @@
-#include <x2d/sprite_batch>
+#include <xgraphics/sprite_batch>
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,7 +33,7 @@ namespace
 		)glsl";
 }
 
-x2d::sprite_batch::sprite_batch() :
+xgraphics::sprite_batch::sprite_batch() :
   program(),
   vao(),
   vertex_buffer(),
@@ -64,14 +64,14 @@ x2d::sprite_batch::sprite_batch() :
 	vao.vertexBuffer(0, vertex_buffer, 0, sizeof(vertex));
 }
 
-void x2d::sprite_batch::begin(glm::mat4 const & transform)
+void xgraphics::sprite_batch::begin(glm::mat4 const & transform)
 {
 	this->transform = transform;
 	vertices.clear();
 	ranges.clear();
 }
 
-void x2d::sprite_batch::draw(
+void xgraphics::sprite_batch::draw(
 	xgl::texture2D const & tex,
 	glm::vec2 const & position,
 	glm::vec2 const & size,
@@ -97,7 +97,7 @@ void x2d::sprite_batch::draw(
 		pos += vec3(center, 0);
 
 		vertex vtx;
-		vtx.pos = position + vec2(pos) + center;
+		vtx.pos = position + vec2(pos) - center;
 		vtx.uv = uv_low + xy * (uv_high - uv_low);
 
 		vertices.push_back(vtx);
@@ -109,7 +109,7 @@ void x2d::sprite_batch::draw(
 	ranges.back().count += 6;
 }
 
-void x2d::sprite_batch::end()
+void xgraphics::sprite_batch::end()
 {
 	if(vertices.size() == 0)
 		return;

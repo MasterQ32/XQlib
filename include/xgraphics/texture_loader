@@ -5,7 +5,7 @@
 #include <string>
 #include <optional>
 
-namespace x2d
+namespace xgraphics
 {
 	std::optional<xgl::texture2D> load_texture(std::string const & file);
 }
