@@ -64,9 +64,9 @@ xgraphics::sprite_batch::sprite_batch() :
 	vao.vertexBuffer(0, vertex_buffer, 0, sizeof(vertex));
 }
 
-void xgraphics::sprite_batch::begin(glm::mat4 const & transform)
+void xgraphics::sprite_batch::begin(glm::mat4 const & _transform)
 {
-	this->transform = transform;
+	this->transform = _transform;
 	vertices.clear();
 	ranges.clear();
 }

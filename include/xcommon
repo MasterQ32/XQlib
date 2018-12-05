@@ -1,0 +1,47 @@
+#ifndef XQLIB_XCOMMON_HPP
+#define XQLIB_XCOMMON_HPP
+
+#include <cstddef>
+
+namespace xcommon
+{
+	template<typename tag>
+	struct unique_id
+	{
+		unsigned long const value;
+
+		constexpr unique_id() noexcept : value(0) { }
+		explicit constexpr unique_id(unsigned long _value) noexcept : value(_value) { }
+		constexpr unique_id(unique_id const & other) noexcept = default;
+		constexpr unique_id(unique_id && other) noexcept = default;
+		~unique_id() noexcept = default;
+
+		constexpr unique_id & operator= (unique_id const & other) noexcept
+		{
+			const_cast<unsigned long&>(value) = other.value;
+			return *this;
+		}
+
+		constexpr bool operator==(unique_id const & other) const noexcept {
+			return (this->value == other.value);
+		}
+
+		constexpr bool operator!=(unique_id const & other) const noexcept {
+			return !(*this == other);
+		}
+
+		constexpr bool operator<(unique_id const & other) const noexcept {
+			return this->value < other.value;
+		}
+
+		struct hash
+		{
+			constexpr std::size_t operator()(unique_id const & id) const noexcept
+			{
+				return id.value;
+			}
+		};
+	};
+}
+
+#endif // XCOMMON_HPP

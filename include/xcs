@@ -13,52 +13,17 @@
 #include <tuple>
 #include <list>
 
-#include "xlog"
+#include "xcommon"
 
 namespace xcs
 {
 	struct entity;
 	struct universe;
 
+	using unique_id = xcommon::unique_id<entity>;
+
 	template<typename T>
-	constexpr bool is_component() { return false; }
-
-	struct unique_id
-	{
-		unsigned long const value;
-
-		constexpr unique_id() noexcept : value(0) { }
-		explicit constexpr unique_id(unsigned long _value) noexcept : value(_value) { }
-		constexpr unique_id(unique_id const & other) noexcept = default;
-		constexpr unique_id(unique_id && other) noexcept = default;
-		~unique_id() noexcept = default;
-
-		constexpr unique_id & operator= (unique_id const & other) noexcept
-		{
-			const_cast<unsigned long&>(value) = other.value;
-			return *this;
-		}
-
-		bool operator==(unique_id const & other) const {
-			return (this->value == other.value);
-		}
-
-		bool operator!=(unique_id const & other) const {
-			return !(*this == other);
-		}
-
-		bool operator<(unique_id const & other) const {
-			return this->value < other.value;
-		}
-
-		struct hash
-		{
-			std::size_t operator()(unique_id const & id) const noexcept
-			{
-				return id.value;
-			}
-		};
-	};
+	constexpr bool is_component() noexcept { return false; }
 
 	inline std::ostream & operator<<(std::ostream & stream, unique_id id)
 	{
@@ -254,16 +219,16 @@ namespace xcs
 	};
 
 	template<typename T>
-	meta_component<T> const & get_meta_component()
+	meta_component<T> const & get_meta_component() noexcept
 	{
 		static_assert(is_component<T>(), "Type is not a registered component!");
 		throw;
 	}
 
 	#define XCS_REGISTER_COMPONENT(_Type) \
-		template<> inline bool ::xcs::is_component<_Type>() { return true; } \
+		template<> inline bool ::xcs::is_component<_Type>() noexcept { return true; } \
 		inline ::xcs::meta_component<_Type> __##_Type##component { #_Type }; \
-		template<> inline ::xcs::meta_component<_Type> const & ::xcs::get_meta_component<_Type>() { \
+		template<> inline ::xcs::meta_component<_Type> const & ::xcs::get_meta_component<_Type>() noexcept { \
 			return __##_Type##component; \
 		}
 
@@ -271,6 +236,7 @@ namespace xcs
 	{
 	private:
 		std::set<unique_id> entities;
+		std::vector<unique_id> deleted_entities;
 		unsigned long nextunique_id;
 		mutable std::unordered_map<std::size_t, std::unique_ptr<component_store_base>> component_stores;
 
@@ -310,24 +276,27 @@ namespace xcs
 				return std::nullopt;
 		}
 
-		bool destroy_entity(entity ent)
+		bool destroy_entity_later(entity ent)
 		{
 			if(&ent.universe != this) // wrong universe, can't remove
 				return false;
-			auto const existed = (entities.erase(ent.id) > 0);
+			auto const existed = (entities.find(ent.id) != entities.end());
 			if(existed)
-			{
-				for(auto & pair : this->component_stores)
-					pair.second->remove(ent.id);
-			}
+				deleted_entities.emplace_back(ent.id);
 			return existed;
 		}
 
 	public:
 		void cleanup()
 		{
+			for(auto id : this->deleted_entities)
+			{
+				for(auto & pair : this->component_stores)
+					pair.second->remove(id);
+			}
 			for(auto & pair : this->component_stores)
 				pair.second->cleanup();
+			this->deleted_entities.clear();
 		}
 
 	private:
@@ -366,32 +335,32 @@ namespace xcs
 	// Typed API:
 
 	template<typename T>
-	inline T & add_component(entity ent)
+	inline T & add_component(entity ent) noexcept
 	{
 		return ent.universe.get_components<T>().add(ent.id);
 	}
 
 	template<typename T>
-	inline bool has_component(entity ent)
+	inline bool has_component(entity ent) noexcept
 	{
 		return ent.universe.get_components<T>().exists(ent.id);
 	}
 
 	template<typename T>
-	inline T * get_component(entity ent)
+	inline T * get_component(entity ent) noexcept
 	{
 		return ent.universe.get_components<T>().get(ent.id);
 	}
 
 	template<typename T>
-	inline bool remove_component(entity ent)
+	inline bool remove_component(entity ent) noexcept
 	{
 		return ent.universe.get_components<T>().remove(ent.id);
 	}
 
 	// Named API:
 
-	inline bool add_component(entity ent, std::string const & name)
+	inline bool add_component(entity ent, std::string const & name) noexcept
 	{
 		if(meta_component_base::find(name) == nullptr)
 			return false;
@@ -399,14 +368,14 @@ namespace xcs
 		return true;
 	}
 
-	inline bool has_component(entity ent, std::string const & name)
+	inline bool has_component(entity ent, std::string const & name) noexcept
 	{
 		if(meta_component_base::find(name) == nullptr)
 			return false;
 		return ent.universe.get_components(name).exists(ent.id);
 	}
 
-	inline bool remove_component(entity ent, std::string const & name)
+	inline bool remove_component(entity ent, std::string const & name) noexcept
 	{
 		if(meta_component_base::find(name) == nullptr)
 			return false;
@@ -416,15 +385,31 @@ namespace xcs
 	// helper for component stores in a universe
 
 	template<typename T>
-	inline component_store<T> & get_components(universe & universe)
+	inline component_store<T> & get_components(universe & universe) noexcept
 	{
 		return universe.get_components<T>();
 	}
 
 	template<typename T>
-	inline component_store<T> const & get_components(universe const & universe)
+	inline component_store<T> const & get_components(universe const & universe) noexcept
 	{
 		return universe.get_components<T>();
+	}
+
+	inline void delete_later(entity ent) noexcept
+	{
+		ent.universe.destroy_entity_later(ent);
+	}
+
+	//! Destroys all entities that were "remove"
+	//! with @ref delete_later and releases their
+	//! memory.
+	//! @param uni The universe that should be cleaned up.
+	//! @remarks This function will invalidate all component
+	//! references.
+	inline void cleanup_universe(universe & uni) noexcept
+	{
+		uni.cleanup();
 	}
 }
 #endif // ECS_HPP

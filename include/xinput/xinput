@@ -1,0 +1,29 @@
+#ifndef XQLIB_XINPUT_HPP
+#define XQLIB_XINPUT_HPP
+
+#include "xcommon"
+
+namespace xinput
+{
+	struct button_tag;
+	struct axis_tag;
+
+	using button = xcommon::unique_id<button_tag>;
+	using axis   = xcommon::unique_id<axis_tag>;
+
+	void begin_update();
+
+	void set_button(button btn, bool pressed);
+
+	void end_update();
+
+	void register_button(button btn);
+
+	bool pressed(button btn);
+
+	bool hit(button btn);
+
+	bool released(button btn);
+}
+
+#endif // XINPUT_HPP

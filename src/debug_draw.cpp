@@ -33,14 +33,14 @@ namespace
 	)glsl";
 }
 
-xgraphics::debug_draw::debug_draw(bool autoClear) :
+xgraphics::debug_draw::debug_draw(bool auto_clear) :
     vertex_buffer(),
     vao(),
     program(),
     point_vertices(),
     line_vertices(),
     tris_vertices(),
-    autoClear(autoClear),
+    autoClear(auto_clear),
     pointSize(5.0f)
 {
 	{

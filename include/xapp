@@ -15,6 +15,7 @@ namespace xapp
 
 	using event_handler = std::function<void(SDL_Event const &)>;
 
+	using event_filter  = std::function<bool(SDL_Event const &)>;
 
 	enum mode
 	{
@@ -35,6 +36,8 @@ namespace xapp
 	bool init(mode mode, options const & opt = options());
 
 	mode was_init();
+
+	void add_event_filter(event_filter const & filt);
 
 	void set_event_handler(SDL_EventType type, event_handler const & handler);
 

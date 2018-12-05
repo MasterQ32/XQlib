@@ -1,0 +1,20 @@
+#ifndef XQLIB_XINPUT_SDL_HPP
+#define XQLIB_XINPUT_SDL_HPP
+
+#include "xinput"
+
+#include <SDL.h>
+
+namespace xinput::sdl
+{
+	void clear_mapping();
+	void clear_mapping_for(button btn);
+
+	void add_mapping(button btn, SDL_Scancode scancode);
+	void remove_mapping(button btn, SDL_Scancode scancode);
+
+
+	bool process_event(SDL_Event const & ev);
+}
+
+#endif // XINPUT_SDL_HPP

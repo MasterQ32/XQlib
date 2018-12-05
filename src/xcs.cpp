@@ -1,4 +1,5 @@
 #include "../include/xcs"
+#include "../include/xcept"
 
 namespace
 {
@@ -33,9 +34,8 @@ xcs::meta_component_base const & xcs::meta_component_base::by_name(std::string c
 {
 	if(auto const * mc = find(name); mc != nullptr)
 		return *mc;
-	throw std::invalid_argument("component " + name + "does not exist");
+	throw xcept::invalid_argument("component " + name + "does not exist");
 }
-
 
 xcs::component_store_base::~component_store_base() noexcept
 {

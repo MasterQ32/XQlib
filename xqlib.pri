@@ -1,8 +1,10 @@
 WARNINGS= \
+	-pedantic \
 	-Weverything \
 	-Wno-c++98-compat -Wno-c++98-compat-pedantic \
 	-Wno-padded \
-	-pedantic
+	-Wno-exit-time-destructors \
+	-Wno-global-constructors
 
 
 # Setup all warnings
@@ -39,7 +41,11 @@ HEADERS += \
 	$$PWD/include/xlog \
 	$$PWD/include/xgraphics/sprite_batch \
 	$$PWD/include/xgraphics/texture_loader \
-	$$PWD/include/xgraphics/debug_draw
+	$$PWD/include/xgraphics/debug_draw \
+    $$PWD/include/xinput/xinput \
+    $$PWD/include/xinput/sdl \
+    $$PWD/include/xcommon \
+    $$PWD/include/xcept
 
 SOURCES += \
 	$$PWD/src/xlog.cpp \
@@ -47,4 +53,6 @@ SOURCES += \
 	$$PWD/src/xcs.cpp \
     $$PWD/src/sprite_batch.cpp \
     $$PWD/src/texture_loader.cpp \
-    $$PWD/src/debug_draw.cpp
+    $$PWD/src/debug_draw.cpp \
+    $$PWD/src/xinput.cpp \
+    $$PWD/src/xinput_sdl.cpp

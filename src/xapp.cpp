@@ -5,12 +5,15 @@
 #include <SDL_opengl.h>
 #include <gsl/gsl>
 #include <map>
+#include <list>
 
 namespace
 {
 	xapp::mode init_mode = xapp::uninitialized;
 
 	bool quit = false;
+
+	std::list<xapp::event_filter> event_filters;
 
 	std::map<SDL_EventType, xapp::event_handler> event_handlers;
 
@@ -104,10 +107,13 @@ bool xapp::init(xapp::mode mode, options const & opt)
 		appError() << "xapp was already initialized!";
 		return false;
 	}
-	if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
+	if(not SDL_WasInit(SDL_INIT_EVERYTHING))
 	{
-		appError() << SDL_GetError();
-		return false;
+		if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
+		{
+			appError() << SDL_GetError();
+			return false;
+		}
 	}
 
 	if(mode == xapp::opengl)
@@ -193,6 +199,17 @@ bool xapp::update()
 	SDL_Event ev;
 	while(SDL_PollEvent(&ev))
 	{
+		bool was_filtered = false;
+		for(auto const & ef : event_filters)
+		{
+			if(not ef(ev))
+				continue;
+			was_filtered = true;
+			break;
+		}
+		if(was_filtered)
+			continue;
+
 		auto h = event_handlers.find(SDL_EventType(ev.type));
 		if(h != event_handlers.end())
 			h->second(ev);
@@ -222,6 +239,10 @@ void xapp::present()
 	}
 }
 
+void xapp::add_event_filter(event_filter const & filt)
+{
+	event_filters.emplace_back(filt);
+}
 
 void xapp::set_event_handler(SDL_EventType type, event_handler const & handler)
 {
