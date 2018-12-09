@@ -16,7 +16,7 @@ bool xinput::sdl::process_event(SDL_Event const & ev)
 		auto it = buttonmapping.find(ev.key.keysym.scancode);
 		if(it == buttonmapping.end())
 			return false;
-		xinput::set_button(it->second, (ev.type == SDL_KEYDOWN));
+		xinput::update_button(it->second, (ev.type == SDL_KEYDOWN));
 		return true;
 	}
 	return false;

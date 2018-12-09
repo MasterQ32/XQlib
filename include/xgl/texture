@@ -69,6 +69,33 @@ namespace xgl
 		void parameter(GLenum key, GLfloat value) {
 			glTextureParameterf(id, key, value);
 		}
+
+		template<typename T>
+		T get_parameter(GLenum key)
+		{
+			T value;
+			if constexpr(std::is_integral_v<T>())
+				glGetTextureParameteriv(id, key, &value);
+			else if constexpr(std::is_same_v<T, float>)
+			  glGetTextureParameterfv(id, key, &value);
+			else
+				static_assert(dependent_false<T>::value, "T not supported");
+			return value;
+		}
+
+		template<typename T>
+		T get_level_parameter(GLenum key, int level)
+		{
+			T value;
+			if constexpr(std::is_integral_v<T>())
+				glGetTextureLevelParameteriv(id, key, &value);
+			else if constexpr(std::is_same_v<T, float>)
+			  glGetTextureLevelParameterfv(id, key, &value);
+			else
+				static_assert(dependent_false<T>::value, "T not supported");
+			return value;
+		}
+
 	public:
 		operator GLuint () const {
 			return id;
@@ -85,6 +112,8 @@ namespace xgl
 		bool operator !=(texture const & other) const {
 			return (id != other.id);
 		}
+	private:
+		template<class T> struct dependent_false : std::false_type {};
 	};
 
 	using texture1D        = texture<GL_TEXTURE_1D>;

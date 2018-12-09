@@ -11,19 +11,67 @@ namespace xinput
 	using button = xcommon::unique_id<button_tag>;
 	using axis   = xcommon::unique_id<axis_tag>;
 
+	enum axis_type
+	{
+		//! Absolute axes keep their value over an update cycle and determine a
+		//! position (like a mouse cursor or a slider value).
+		absolute,
+
+		//! Relative axes will only contain "deltas" of change and will reset
+		//! to 0.0 at the begin of each update cycle with changes.
+		//! This input model is similar to an "analogue stick" or "mouse movement".
+		relative,
+	};
+
+	// generic api
+
+	//! Starts an xinput update cycle.
 	void begin_update();
 
-	void set_button(button btn, bool pressed);
+	//! Changes the state of a button.
+	void update_button(button btn, bool pressed);
 
+	//! Changes any axis in an absolute fashion.
+	//! For absolute axes, the axis value will be replaced.
+	//! For relative axes, the behaviour is the same as a relatve update.
+	void update_axis_absolute(axis axis, float value);
+
+	//! Changes any axis in a relative fashion.
+	//! For absolute axes, the delta will be added to the current value.
+	//! For relative axes, the delta will be summed up for all update calls.
+	void update_axis_relative(axis axis, float delta);
+
+	//! Ends an xinput update cycle.
 	void end_update();
 
+	// button api
+
+	//! Associates a button identifier for the use with xinput.
 	void register_button(button btn);
 
+	//! Returns `true` if the button is currently pressed.
 	bool pressed(button btn);
 
+	//! Returns `true` if the button was pressed since the last update cycle.
 	bool hit(button btn);
 
+	//! Returns `true` if the button was released since the last update cycle.
 	bool released(button btn);
+
+	// axis api
+
+	//! Associates an axis identifier for the use with xinput.
+	//! @param axis The axis to associate.
+	//! @param type Either `relative` or `absolute`
+	void register_axis(axis axis, axis_type type);
+
+	//! Returns a normalized value between -1.0 and 1.0 for relative
+	//! axes and the non-normalized value for absolute axis.
+	float value(axis axis);
+
+	//! Returns the delta value of an absolute axis since the last update cycle.
+	//! Relative axes always have a delta of 0.0.
+	float delta(axis axis);
 }
 
 #endif // XINPUT_HPP

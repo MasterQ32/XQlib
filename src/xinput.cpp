@@ -2,6 +2,7 @@
 #include "../include/xcept"
 
 #include <vector>
+#include <glm/glm.hpp>
 
 
 namespace
@@ -20,11 +21,26 @@ namespace
 		bool is_released;
 	};
 
-	std::vector<button_info> buttonstate;
-
-	button_info & button(xinput::button btn)
+	struct axis_info
 	{
-		return buttonstate[btn.value];
+		xinput::axis_type type;
+		float last_value;
+		float value;
+
+		bool any_input;
+	};
+
+	std::vector<button_info> buttons;
+	std::vector<axis_info> axes;
+
+	button_info & V(xinput::button btn)
+	{
+		return buttons[btn.value];
+	}
+
+	axis_info & V(xinput::axis axis)
+	{
+		return axes[axis.value];
 	}
 }
 
@@ -33,18 +49,23 @@ void xinput::begin_update()
 	if(updating)
 		throw xcept::invalid_operation("xinput::begin_update: end_update was not called.");
 	updating = true;
-	for(auto & info : buttonstate)
+	for(auto & info : buttons)
 	{
 		info.is_hit = false;
 		info.is_released = false;
 	}
+	for(auto & axis : axes)
+	{
+		axis.last_value = axis.value;
+		axis.any_input = false;
+	}
 }
 
-void xinput::set_button(button btn, bool is_pressed)
+void xinput::update_button(button btn, bool is_pressed)
 {
 	if(not updating)
 		throw xcept::invalid_operation("xinput::begin_update: begin_update was not called.");
-	auto & button = ::button(btn);
+	auto & button = V(btn);
 
 	if(button.is_pressed == is_pressed)
 		return;
@@ -56,32 +77,102 @@ void xinput::set_button(button btn, bool is_pressed)
 	button.is_pressed = is_pressed;
 }
 
+void xinput::update_axis_absolute(axis _axis, float value)
+{
+	if(not updating)
+		throw xcept::invalid_operation("xinput::begin_update: begin_update was not called.");
+	auto & axis = V(_axis);
+
+	switch(axis.type)
+	{
+		case relative:
+			update_axis_relative(_axis, value);
+			break;
+
+		case absolute:
+			axis.value = value;
+			axis.any_input = true;
+			break;
+	}
+}
+
+void xinput::update_axis_relative(axis _axis, float delta)
+{
+	if(not updating)
+		throw xcept::invalid_operation("xinput::begin_update: begin_update was not called.");
+	auto & axis = V(_axis);
+
+	switch(axis.type)
+	{
+		case relative:
+			if(not axis.any_input)
+				axis.value = 0;
+			axis.value += delta;
+			axis.any_input = true;
+			break;
+
+		case absolute:
+			axis.value += delta;
+			axis.any_input = true;
+			break;
+	}
+}
+
 void xinput::end_update()
 {
 	if(not updating)
 		throw xcept::invalid_operation("xinput::begin_update: begin_update was not called.");
 	updating = false;
+	for(auto & axis : axes)
+	{
+		if(axis.type == relative)
+			axis.value = glm::clamp(axis.value, -1.0f, 1.0f);
+	}
 }
 
 void xinput::register_button(button btn)
 {
-	buttonstate.resize(std::max(buttonstate.size(), btn.value + 1));
+	buttons.resize(std::max(buttons.size(), btn.value + 1));
 }
 
 bool xinput::pressed(button btn)
 {
 	check_updating();
-	return ::button(btn).is_pressed;
+	return V(btn).is_pressed;
 }
 
 bool xinput::hit(button btn)
 {
 	check_updating();
-	return ::button(btn).is_hit;
+	return V(btn).is_hit;
 }
 
 bool xinput::released(button btn)
 {
 	check_updating();
-	return ::button(btn).is_released;
+	return V(btn).is_released;
+}
+
+
+
+
+
+void xinput::register_axis(axis axis, axis_type type)
+{
+	axes.resize(std::max(axes.size(), axis.value + 1));
+	V(axis).type = type;
+}
+
+float xinput::value(axis axis)
+{
+	check_updating();
+	return V(axis).value;
+}
+
+float xinput::delta(axis axis)
+{
+	check_updating();
+	if(V(axis).type == relative)
+		return 0.0;
+	return V(axis).value - V(axis).last_value;
 }

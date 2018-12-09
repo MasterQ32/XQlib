@@ -1,0 +1,35 @@
+#ifndef XQLIB_SHADER_COMPILER_HPP
+#define XQLIB_SHADER_COMPILER_HPP
+
+#include "../include/xgl/shader"
+#include "../include/xgl/program"
+
+#include <list>
+
+namespace xgraphics
+{
+	struct shader_compiler
+	{
+		xgl::program program;
+		std::list<xgl::shader> shaders;
+
+		shader_compiler & attach(GLenum type, char const * source)
+		{
+			auto & sh = shaders.emplace_back(type);
+			sh.source(source);
+			sh.compile();
+			program.attach(sh);
+			return *this;
+		}
+
+		xgl::program link()
+		{
+			program.link();
+			for(auto & sh : shaders)
+				program.detach(sh);
+			return std::move(program);
+		}
+	};
+}
+
+#endif // SHADER_COMPILER_HPP

@@ -13,6 +13,7 @@ namespace xinput::sdl
 	void add_mapping(button btn, SDL_Scancode scancode);
 	void remove_mapping(button btn, SDL_Scancode scancode);
 
+	void add_mapping(axis ax, SDL_Scancode scancode, float delta);
 
 	bool process_event(SDL_Event const & ev);
 }

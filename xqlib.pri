@@ -6,19 +6,23 @@ WARNINGS= \
 	-Wno-exit-time-destructors \
 	-Wno-global-constructors
 
-
 # Setup all warnings
 QMAKE_CFLAGS   += $$WARNINGS
 QMAKE_CXXFLAGS += $$WARNINGS
 QMAKE_LFLAGS   += $$WARNINGS
 
 # Install C++17
+CONFIG -= c++11
+CONFIG += c++17
 QMAKE_CXXFLAGS += -std=c++17
+QMAKE_LFLAGS += -std=c++17
 
+#include external modules
 include($$PWD/pri/sdl2.pri)
 include($$PWD/pri/gsl.pri)
 include($$PWD/pri/stb.pri)
 include($$PWD/pri/gl3w.pri)
+include($$PWD/pri/curl.pri)
 
 DEFINES += XGL_ENABLE_GLM
 
@@ -45,7 +49,9 @@ HEADERS += \
     $$PWD/include/xinput/xinput \
     $$PWD/include/xinput/sdl \
     $$PWD/include/xcommon \
-    $$PWD/include/xcept
+    $$PWD/include/xcept \
+    $$PWD/include/xgraphics/shader_compiler \
+    $$PWD/include/xnet/http
 
 SOURCES += \
 	$$PWD/src/xlog.cpp \
@@ -55,4 +61,5 @@ SOURCES += \
     $$PWD/src/texture_loader.cpp \
     $$PWD/src/debug_draw.cpp \
     $$PWD/src/xinput.cpp \
-    $$PWD/src/xinput_sdl.cpp
+    $$PWD/src/xinput_sdl.cpp \
+    $$PWD/src/xnet.cpp

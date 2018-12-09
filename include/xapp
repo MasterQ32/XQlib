@@ -1,46 +1,76 @@
 #pragma once
 
 #include <SDL.h>
-
 #include <string>
 #include <glm/glm.hpp>
-
 #include <functional>
 
+//! *xapp* is an SDL2 abstraction layer that provides
+//! managed event and window handling.
+//! It creates a window and initializes OpenGL if required, provides
+//! a non-owning mainloop interface (@ref init, @ref update, @ref shutdown),
+//! so each application retains control over the main loop.
+//!
+//! xapp provides both SDL_Renderer and OpenGL backends for drawing. These can
+//! only be used mutual exclusive. @ref xapp::present flips either the
+//! SDL_Renderer surface or the OpenGL back buffer, so the same api is kept.
+//!
+//! xapp also exposes a simple event routing mechanism which allows a single
+//! callback per SDL_EventType. To consume all SDL events, an event filter can
+//! be installed. Each event filter may prevent all following event filters
+//! and handlers from beeing executed, so other systems (as @ref xinput::sdl)
+//! can handle events.
 namespace xapp
 {
-	extern SDL_Window * window;
+	extern SDL_Window   * window;
 	extern SDL_Renderer * renderer;
-	extern SDL_GLContext glcontext;
+	extern SDL_GLContext  glcontext;
 
+	//! A function type that handles SDL events.
 	using event_handler = std::function<void(SDL_Event const &)>;
 
+	//! A function type that is used for filtering SDL events.
+	//! If the function returns `true`, the filter tells xapp
+	//! to not process this event.
 	using event_filter  = std::function<bool(SDL_Event const &)>;
 
 	enum mode
 	{
-		uninitialized = 0,
-		opengl = 1,
-		sdl = 2,
+		uninitialized = 0, ///< xapp was not initialized.
+		opengl = 1,        ///< initialize xapp with OpenGL backend
+		sdl = 2,           ///< initialize xapp with SDL backend.
 	};
 
 	struct options
 	{
-		std::string title;
-		glm::ivec2 resolution;
-		bool fullscreen;
+		std::string title;     ///< Window title
+		glm::ivec2 resolution; ///< Internal window resolution
+		bool fullscreen;       ///< If set `true`, the application will start in "borderless fullscreen" mode. @ref resolution is ignored.
 
 		options(std::string const & title = "Untitled XApp", glm::ivec2 resolution = glm::ivec2(1280, 720), bool fullscreen = false);
 	};
 
+	//! Initializes xapp with either `opengl` or `sdl` mode.
+	//! @ref mode the mode to initialize xapp with
+	//! @ref opt  options for initialization. Defines window size, title and features.
+	//! @returns `true` on success
 	bool init(mode mode, options const & opt = options());
 
+	//! Returns the mode xapp was initialized with or `uninitialized`
+	//! if no initialization was done yet.
 	mode was_init();
 
+	//! Adds an event filter to the update loop.
+	//! The event filters are called in first-to-last order.
+	//! If any event filter returns `true`, the event processing
+	//! is stopped.
+	//! @see set_event_handler, update
 	void add_event_filter(event_filter const & filt);
 
+	//! Adds a generic event handler for the given event type.
 	void set_event_handler(SDL_EventType type, event_handler const & handler);
 
+	//! Removes a previously installed event handler
 	void remove_event_handler(SDL_EventType type);
 
 	template<SDL_EventType type>
@@ -49,6 +79,9 @@ namespace xapp
 	template<SDL_EventType type>
 	typename sdl_event<type>::type const & convert_sdl_event(SDL_Event const & ev);
 
+	//! Adds an event handler for a specific SDL event.
+	//! The event handler parameter is automatically selected for the
+	//! given event type, so this skips union field access overhead.
 	template<SDL_EventType type>
 	void set_event_handler(std::function<void(typename sdl_event<type>::type const &)> const & handler)
 	{
@@ -58,17 +91,24 @@ namespace xapp
 		});
 	}
 
+	//! Updates the application and pumps events.
+	//! @returns `true` while the app is active, `false` when the app is being
+	//! shut down.
 	bool update();
 
+	//! Flips the back buffer of either the SDL backend or the OpenGL backend
+	//! and presents the current image.
 	void present();
 
+	//! Notifies the application to shut down. Forces @ref update to return `false`.
 	void shutdown();
 }
 
 
 
 
-
+// Separated from declarations above. Provides conversion from SDL_Event union
+// to correct event type. Kinda x-macro thing here.
 namespace xapp
 {
 #define XAPP_EV(_Enum,_Subscript) \
