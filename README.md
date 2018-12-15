@@ -143,4 +143,40 @@ int main()
 ## XM
 math library with linear algebra stuff useful for gamedev
 
+## XNet
 
+networking library with multiple levels of networking.
+
+### Socket example
+
+Simple server that accepts exactly one connection and echoes all sent text:
+
+```cpp
+int main()
+{
+	xnet::socket server(AF_INET, SOCK_STREAM);
+
+	if(not server.bind(xnet::parse_ipv4("127.0.0.1", 8080)))
+		return 1;
+
+	if(not server.listen())
+		return 2;
+
+	while(true)
+	{
+		auto [ client, addr ] = *server.accept();
+		std::cout << "connection from " << xnet::to_string(addr) << "!" << std::endl;
+		while(true)
+		{
+			std::array<char, 128> data;
+			auto const len = client.read(data.data(), data.size());
+			if(len == 0)
+				break;
+			if(len < 0)
+				return 3;
+			client.write(data.data(), len);
+		}
+		std::cout << "client disconnected!" << std::endl;
+	}
+}
+```
