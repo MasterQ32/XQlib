@@ -24,7 +24,7 @@ namespace xnet
 
 		bool listen(int backlog = 128);
 
-		std::optional<std::tuple<socket, endpoint>> accept();
+		std::tuple<socket, endpoint> accept();
 
 		bool connect(endpoint const & addr);
 

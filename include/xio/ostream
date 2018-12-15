@@ -1,0 +1,60 @@
+#ifndef XQLIB_OSTREAM_HPP
+#define XQLIB_OSTREAM_HPP
+
+#include <cstddef>
+#include <type_traits>
+#include <array>
+#include <cstring>
+#include <string>
+
+namespace xio
+{
+	//! basic stream for writing data.
+	struct ostream
+	{
+		virtual ~ostream();
+
+		virtual ssize_t write_raw(void const * data, size_t length) noexcept = 0;
+
+		void write(void const * data, size_t length);
+
+		template<typename T>
+		std::enable_if_t<std::is_trivial_v<T>> write(T const & value)
+		{
+			write(&value, sizeof value);
+		}
+
+		void write(char const * string)
+		{
+			write(string, strlen(string));
+		}
+
+		void write(std::string const & string)
+		{
+			write(string.data(), string.size());
+		}
+
+		template<typename T, size_t N>
+		void write(T const (& array)[N])
+		{
+			for(size_t i = 0; i < N; i++)
+				write(array[i]);
+		}
+
+		template<typename T, size_t N>
+		void write(std::array<T, N> const & array)
+		{
+			for(size_t i = 0; i < N; i++)
+				write(array[i]);
+		}
+
+		template<typename Iterator>
+		void write(Iterator begin, Iterator end)
+		{
+			for(auto it = begin; it != end; it++)
+				write(*it);
+		}
+	};
+}
+
+#endif // OSTREAM_HPP

@@ -1,0 +1,45 @@
+#ifndef XQLIB_SOCKET_STREAM_HPP
+#define XQLIB_SOCKET_STREAM_HPP
+
+#include "../xio/iostream"
+#include "socket"
+
+namespace xnet
+{
+	//! A stream that allows reading data from a socket.
+	struct socket_istream : xio::istream
+	{
+		socket & sock;
+
+		explicit socket_istream(socket & sock);
+		socket_istream(socket_istream const &) = delete;
+		socket_istream(socket_istream &&) = default;
+		~socket_istream() override;
+
+		ssize_t read_raw(void * data, size_t length) noexcept override;
+	};
+
+	//! A stream that allows writing data to a socket.
+	struct socket_ostream : xio::ostream
+	{
+		socket & sock;
+
+		explicit socket_ostream(socket & sock);
+		socket_ostream(socket_ostream const &) = delete;
+		socket_ostream(socket_ostream &&) = default;
+		~socket_ostream() override;
+
+		ssize_t write_raw(void const * data, size_t length) noexcept override;
+	};
+
+	//! A stream that allows reading and writing data with a socket.
+	struct socket_stream : socket_ostream, socket_istream, xio::iostream
+	{
+		socket_stream(socket & sock);
+		socket_stream(socket_stream const &) = delete;
+		socket_stream(socket_stream &&) = default;
+		~socket_stream() override;
+	};
+}
+
+#endif // SOCKET_STREAM_HPP

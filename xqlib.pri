@@ -57,7 +57,11 @@ HEADERS += \
     $$PWD/include/xnet/socket \
     $$PWD/include/xnet/http/server \
     $$PWD/include/xnet/dns \
-    $$PWD/include/xnet/ip
+    $$PWD/include/xnet/ip \
+    $$PWD/include/xio/ostream \
+    $$PWD/include/xio/istream \
+    $$PWD/include/xnet/socket_stream \
+    $$PWD/include/xio/iostream
 
 !contains(CONFIG,xqlib_extern):{
 	message("include xqlib source")
@@ -74,4 +78,5 @@ HEADERS += \
 }
 
 SOURCES += \
-    $$PWD/src/xception.cpp
+    $$PWD/src/xception.cpp \
+    $$PWD/src/xio.cpp

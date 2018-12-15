@@ -2,36 +2,49 @@
 #define XQLIB_SERVER_HPP
 
 #include "../socket"
+#include "../socket_stream"
 #include "../ip"
 
 #include <string>
+#include <memory>
+#include <map>
 
 namespace xnet::http
 {
 	struct http_request
 	{
+		std::shared_ptr<xnet::socket> socket;
+
 		std::string method;
 		std::string url;
+		std::map<std::string, std::string> headers;
 
-		ssize_t read(void * data, size_t length);
+		http_request(std::shared_ptr<xnet::socket> sock);
+
+		//! Returns a stream to the http content. Headers are already parsed.
+		socket_istream get_stream();
 	};
 
 	struct http_response
 	{
+		std::shared_ptr<xnet::socket> socket;
+
+		http_response(std::shared_ptr<xnet::socket> sock);
+
 		int status_code;
+		std::map<std::string, std::string> headers;
 
-		void add_header(std::string const & name, std::string const & value);
-
-		ssize_t write(void const * data, size_t length);
+		//! Returns a stream to the http content. Headers will be written as soon
+		//! as this function is called.
+		socket_ostream get_stream();
 	};
 
 	struct server
 	{
+		xnet::socket socket;
+		server();
+
 		bool bind(endpoint const & ep);
-
-		void start();
-
-		void stop();
 
 		std::tuple<http_request, http_response> get_context();
 	};

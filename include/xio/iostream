@@ -1,0 +1,17 @@
+#ifndef XQLIB_IOSTREAM_HPP
+#define XQLIB_IOSTREAM_HPP
+
+#include "istream"
+#include "ostream"
+
+namespace xio
+{
+	//! combined input and output stream. has both features of xio::istream and
+	//! xio::ostream.
+	struct iostream : istream, ostream
+	{
+		~iostream() override;
+	};
+}
+
+#endif // IOSTREAM_HPP

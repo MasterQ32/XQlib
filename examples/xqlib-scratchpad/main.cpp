@@ -19,31 +19,40 @@
 #include <xnet/socket>
 #include <xnet/dns>
 #include <xnet/ip>
-
-#include <tuple>
+#include <xcept>
 
 #include <iostream>
 
 int main()
 {
 	xnet::http::server server;
-	server.bind(xnet::parse_ipv4("0.0.0.0", 80));
+	if(not server.bind(xnet::parse_ipv4("0.0.0.0", 8080)))
+		return 1;
 
-	server.start();
+	std::cout << "ready.\n";
+
 	while(true)
 	{
 		auto [ request, response ] = server.get_context();
-		if(request.method == "GET")
+		response.status_code = 200;
+
+		auto stream = response.get_stream();
+
+		stream.write("you requested the url '");
+		stream.write(request.url);
+		stream.write("'. be happy with this display!\n");
+
+		stream.write("method used: ");
+		stream.write(request.method);
+		stream.write("\n");
+
+		stream.write("Oh, you also sent those headers:\n");
+		for(auto const & header : request.headers)
 		{
-			response.status_code = 202;
-			response.write("you requested the url '");
-			response.write(request.url);
-			response.write("'. be happy with this display!");
-		}
-		else
-		{
-			response.status_code = 405;
-			response.write("not supported.");
+			stream.write(header.first);
+			stream.write(": ");
+			stream.write(header.second);
+			stream.write("\n");
 		}
 	}
 }

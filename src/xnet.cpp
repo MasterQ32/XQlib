@@ -1,9 +1,11 @@
 #include "../include/xnet/http/client"
 #include "../include/xnet/http/server"
 #include "../include/xnet/socket"
+#include "../include/xnet/socket_stream"
 #include "../include/xnet/dns"
 #include "../include/xnet/ip"
 #include "../include/xlog"
+#include "../include/xcept"
 
 #include <curl/curl.h>
 #include <curl/easy.h>
@@ -17,6 +19,7 @@
 #include <gsl/gsl>
 
 #include <cstring>
+#include <regex>
 
 template<typename Dst, typename Src>
 static Dst memblit(Src const & val)
@@ -270,14 +273,14 @@ bool xnet::socket::listen(int backlog)
 }
 
 
-std::optional<std::tuple<xnet::socket, xnet::endpoint>> xnet::socket::accept()
+std::tuple<xnet::socket, xnet::endpoint> xnet::socket::accept()
 {
 	xnet::endpoint addr;
 	socklen_t addr_len = addr.size();
 
 	auto const sock = ::accept(handle, addr.data(), &addr_len);
 	if(sock == -1)
-		return std::nullopt;
+		throw xcept::io_error("failed to accept socket!");
 
 	return std::make_tuple(xnet::socket(sock), addr);
 }
@@ -309,4 +312,174 @@ std::tuple<ssize_t, xnet::endpoint> xnet::socket::read_from(void * data, size_t 
 ssize_t xnet::socket::write_to(endpoint const & target, void const * data, size_t length, int flags)
 {
 	return ::sendto(handle, data, length, flags, target.data(), target.size());
+}
+
+
+xnet::socket_istream::socket_istream(socket & _sock) :
+  sock(_sock)
+{
+
+}
+
+xnet::socket_ostream::~socket_ostream()
+{
+
+}
+
+xnet::socket_ostream::socket_ostream(socket & _sock) :
+  sock(_sock)
+{
+
+}
+
+xnet::socket_istream::~socket_istream()
+{
+
+}
+
+xnet::socket_stream::socket_stream(socket & _sock) :
+  socket_ostream(_sock),
+  socket_istream(_sock)
+{
+
+}
+
+xnet::socket_stream::~socket_stream()
+{
+
+}
+
+ssize_t xnet::socket_ostream::write_raw(void const * data, size_t length) noexcept
+{
+	return sock.write(data, length, 0);
+}
+
+ssize_t xnet::socket_istream::read_raw(void * data, size_t length) noexcept
+{
+	return sock.read(data, length, 0);
+}
+
+
+
+
+
+
+
+
+xnet::http::server::server() :
+  socket(AF_INET, SOCK_STREAM, 0)
+{
+
+}
+
+bool xnet::http::server::bind(endpoint const & ep)
+{
+	if(not socket.bind(ep))
+		return false;
+	if(not socket.listen())
+		return false;
+	return true;
+}
+
+#include <iostream>
+
+namespace
+{
+	std::regex const http_init_pattern(R"rgx(^([A-Z]+)[ ]+([^ ]*)[ ]+HTTP\/(\d)\.(\d)$)rgx", std::regex::ECMAScript);
+
+	std::regex const http_header_pattern(R"rgx(^([A-Za-z0-9\_\-]+)\:[ ]+(.*)$)rgx", std::regex::ECMAScript);
+}
+
+std::tuple<xnet::http::http_request, xnet::http::http_response> xnet::http::server::get_context()
+{
+	while(true)
+	{
+	_restart:
+		auto [ client, remote ] = socket.accept();
+		auto sock = std::make_shared<xnet::socket>(std::move(client));
+
+		http_request request { sock };
+		http_response response { sock };
+
+		socket_istream stream { *sock };
+
+		enum { INIT, HEADER } state = INIT;
+		for(auto line = stream.read_line(); not line.empty(); line = stream.read_line())
+		{
+			switch(state)
+			{
+				case INIT:
+				{
+					std::smatch match;
+					if(not std::regex_match(line, match, http_init_pattern))
+						goto _restart;
+					request.method = match[1].str(); // method
+					request.url = match[2].str();    // url
+
+					auto const version_major = std::strtol(match[3].str().c_str(), nullptr, 10);
+					auto const version_minor = std::strtol(match[4].str().c_str(), nullptr, 10);
+
+					if(version_major != 1)
+						goto _restart;
+					if(version_minor < 0 or version_minor > 1)
+						goto _restart;
+
+					state = HEADER;
+					break;
+				}
+
+				case HEADER:
+				{
+					std::smatch match;
+					if(not std::regex_match(line, match, http_header_pattern))
+						goto _restart;
+					request.headers.emplace(match[1].str(), match[2].str());
+					break;
+				}
+			}
+		}
+
+		return std::make_tuple(std::move(request), std::move(response));
+	}
+}
+
+
+
+xnet::http::http_request::http_request(std::shared_ptr<xnet::socket> sock) :
+  socket(sock),
+  method("UNKNOWN")
+{
+
+}
+
+xnet::socket_istream xnet::http::http_request::get_stream()
+{
+	return socket_istream { *socket };
+}
+
+
+xnet::http::http_response::http_response(std::shared_ptr<xnet::socket> sock) :
+  socket(sock),
+  status_code(200),
+  headers()
+{
+
+}
+
+xnet::socket_ostream xnet::http::http_response::get_stream()
+{
+	socket_ostream stream { *socket };
+	stream.write("HTTP/1.1 ");
+	stream.write(std::to_string(this->status_code));
+	stream.write(" \n");
+	for(auto const & header : headers)
+	{
+		stream.write(header.first);
+		stream.write(": ");
+		stream.write(header.second);
+		stream.write("\n");
+	}
+	stream.write("\n");
+
+	return std::move(stream);
 }

@@ -1,0 +1,55 @@
+#ifndef XQLIB_ISTREAM_HPP
+#define XQLIB_ISTREAM_HPP
+
+#include <cstddef>
+#include <array>
+#include <vector>
+#include <string>
+
+namespace xio
+{
+	//! generic input stream
+	struct istream
+	{
+		virtual ~istream();
+
+		virtual ssize_t read_raw(void * data, size_t length) noexcept = 0;
+
+		void read(void * data, size_t length);
+
+		template<typename T>
+		std::enable_if_t<std::is_trivial_v<T>, T> read()
+		{
+			T value;
+			read(&value, sizeof value);
+			return value;
+		}
+
+		template<typename T, size_t N>
+		std::array<T, N> read()
+		{
+			std::array<T, N> array;
+			for(size_t i = 0; i < N; i++)
+				array[i] = read<T>();
+			return array;
+		}
+
+		template<typename T>
+		std::vector<T> read(size_t count)
+		{
+			std::vector<T> array(count);
+			for(size_t i = 0; i < array.size(); i++)
+				array[i] = read<T>();
+			return array;
+		}
+
+		//! reads a line from the stream char by char.
+		//! ignores all characters in param ignore and stops as soon as a character
+		//! from param delimiter is found.
+		//! @param delimiter A set of characters that signal the end of a line
+		//! @param ignore    A set of characters that are ignored when reading.
+		std::string read_line(char const * delimiter = "\n", char const * ignore = "\r");
+	};
+}
+
+#endif // ISTREAM_HPP
