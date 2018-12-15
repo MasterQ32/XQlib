@@ -1,5 +1,6 @@
 #include "../include/xapp"
 #include "../include/xlog"
+#include "../include/xinput/xinput"
 
 #include <GL/gl3w.h>
 #include <SDL_opengl.h>
@@ -9,6 +10,8 @@
 
 namespace
 {
+	bool xinput_active = false;
+
 	xapp::mode init_mode = xapp::uninitialized;
 
 	bool quit = false;
@@ -196,6 +199,9 @@ bool xapp::init(xapp::mode mode, options const & opt)
 
 bool xapp::update()
 {
+	if(::xinput_active)
+		xinput::begin_update();
+
 	SDL_Event ev;
 	while(SDL_PollEvent(&ev))
 	{
@@ -216,6 +222,9 @@ bool xapp::update()
 		else
 			xlog::log("xapp", xlog::verbose) << "Unhandled SDL event " << ev.type;
 	}
+
+	if(::xinput_active)
+		xinput::end_update();
 
 	return not quit;
 }
@@ -239,6 +248,11 @@ void xapp::present()
 	}
 }
 
+void xapp::enable_xinput(bool enabled)
+{
+	::xinput_active = enabled;
+}
+
 void xapp::add_event_filter(event_filter const & filt)
 {
 	event_filters.emplace_back(filt);
@@ -257,4 +271,11 @@ void xapp::remove_event_handler(SDL_EventType type)
 void xapp::shutdown()
 {
 	quit = true;
+}
+
+glm::ivec2 xapp::get_screen_resolution()
+{
+	glm::ivec2 result;
+	SDL_GetWindowSize(xapp::window, &result.x, &result.y);
+	return result;
 }

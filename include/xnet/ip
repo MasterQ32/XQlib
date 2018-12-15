@@ -1,0 +1,46 @@
+#ifndef XQLIB_IP_HPP
+#define XQLIB_IP_HPP
+
+#include <netinet/in.h>
+#include <string>
+
+namespace xnet
+{
+	struct endpoint
+	{
+		sockaddr_storage value;
+
+		endpoint();
+		endpoint(sockaddr const & addr);
+		endpoint(sockaddr_in const & addr);
+		endpoint(sockaddr_in6 const & addr);
+
+		sockaddr * data () {
+			return reinterpret_cast<sockaddr *>(&value);
+		}
+
+		sockaddr const * data () const {
+			return reinterpret_cast<sockaddr const *>(&value);
+		}
+
+		socklen_t size() const {
+			return sizeof value;
+		}
+
+		int family() const {
+			return value.ss_family;
+		}
+	};
+
+	//! Parses an IPv4 address in the form of `ddd.ddd.ddd.ddd` where *ddd* is
+	//! a decimal number between 0 and 255.
+	endpoint parse_ipv4(char const * addr, int port);
+
+	//! Parses an IPv6 address.
+	endpoint parse_ipv6(char const * addr, int port);
+
+	//! Converts a socket address to a string representation
+	std::string to_string(endpoint const & addr);
+}
+
+#endif // IP_HPP

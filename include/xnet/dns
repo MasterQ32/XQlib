@@ -1,0 +1,31 @@
+#ifndef XQLIB_DNS_HPP
+#define XQLIB_DNS_HPP
+
+#include <netdb.h>
+
+#include <optional>
+#include <vector>
+#include <string>
+
+#include "ip"
+
+namespace xnet::dns
+{
+	struct dns_entry
+	{
+		int flags;			/* Input flags.  */
+	  int family;		/* Protocol family for socket.  */
+	  int socket_type;		/* Socket type.  */
+	  int protocol;		/* Protocol for socket.  */
+	  endpoint address;	/* Socket address for socket.  */
+	  std::string canonname;		/* Canonical name for service location.  */
+
+		dns_entry();
+	};
+
+	//! Resolves a hostname with dns or /etc/hosts. Returns all addresses for this
+	//! host.
+	std::vector<dns_entry> resolve(std::string const & hostname, std::string const & service = "", int socket_type = 0, int address_family = AF_UNSPEC);
+}
+
+#endif // DNS_HPP

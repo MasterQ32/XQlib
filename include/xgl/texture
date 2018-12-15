@@ -88,9 +88,9 @@ namespace xgl
 		{
 			T value;
 			if constexpr(std::is_integral_v<T>())
-				glGetTextureLevelParameteriv(id, key, &value);
+				glGetTextureLevelParameteriv(id, level, key, &value);
 			else if constexpr(std::is_same_v<T, float>)
-			  glGetTextureLevelParameterfv(id, key, &value);
+			  glGetTextureLevelParameterfv(id, level, key, &value);
 			else
 				static_assert(dependent_false<T>::value, "T not supported");
 			return value;

@@ -102,6 +102,16 @@ namespace xapp
 
 	//! Notifies the application to shut down. Forces @ref update to return `false`.
 	void shutdown();
+
+	//! Returns the inner window size of the current xapp window.
+	glm::ivec2 get_screen_resolution();
+
+	//! Enables or disables xinput support in xapp.
+	//! If enabled, xapp automatically calls @ref xinput::begin_update
+	//! and @ref xinput::end_update in @ref xapp::update.
+	//! @remarks `xapp::add_event_filter(xinput::process_events)` must still be
+	//!          called manually.
+	void enable_xinput(bool enabled = true);
 }
 
 

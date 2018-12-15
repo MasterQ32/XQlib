@@ -1,0 +1,40 @@
+#ifndef XQLIB_SERVER_HPP
+#define XQLIB_SERVER_HPP
+
+#include "../socket"
+#include "../ip"
+
+#include <string>
+
+namespace xnet::http
+{
+	struct http_request
+	{
+		std::string method;
+		std::string url;
+
+		ssize_t read(void * data, size_t length);
+	};
+
+	struct http_response
+	{
+		int status_code;
+
+		void add_header(std::string const & name, std::string const & value);
+
+		ssize_t write(void const * data, size_t length);
+	};
+
+	struct server
+	{
+		bool bind(endpoint const & ep);
+
+		void start();
+
+		void stop();
+
+		std::tuple<http_request, http_response> get_context();
+	};
+}
+
+#endif // SERVER_HPP

@@ -23,6 +23,8 @@ include($$PWD/pri/gsl.pri)
 include($$PWD/pri/stb.pri)
 include($$PWD/pri/gl3w.pri)
 include($$PWD/pri/curl.pri)
+include($$PWD/pri/enet.pri)
+
 
 DEFINES += XGL_ENABLE_GLM
 
@@ -46,20 +48,30 @@ HEADERS += \
 	$$PWD/include/xgraphics/sprite_batch \
 	$$PWD/include/xgraphics/texture_loader \
 	$$PWD/include/xgraphics/debug_draw \
-    $$PWD/include/xinput/xinput \
-    $$PWD/include/xinput/sdl \
-    $$PWD/include/xcommon \
-    $$PWD/include/xcept \
-    $$PWD/include/xgraphics/shader_compiler \
-    $$PWD/include/xnet/http
+	$$PWD/include/xinput/xinput \
+	$$PWD/include/xinput/sdl \
+	$$PWD/include/xcommon \
+	$$PWD/include/xcept \
+	$$PWD/include/xgraphics/shader_compiler \
+	$$PWD/include/xnet/http/client \
+    $$PWD/include/xnet/socket \
+    $$PWD/include/xnet/http/server \
+    $$PWD/include/xnet/dns \
+    $$PWD/include/xnet/ip
+
+!contains(CONFIG,xqlib_extern):{
+	message("include xqlib source")
+	SOURCES += \
+		$$PWD/src/xlog.cpp \
+		$$PWD/src/xapp.cpp\
+		$$PWD/src/xcs.cpp \
+		$$PWD/src/sprite_batch.cpp \
+		$$PWD/src/texture_loader.cpp \
+		$$PWD/src/debug_draw.cpp \
+		$$PWD/src/xinput.cpp \
+		$$PWD/src/xinput_sdl.cpp \
+		$$PWD/src/xnet.cpp
+}
 
 SOURCES += \
-	$$PWD/src/xlog.cpp \
-	$$PWD/src/xapp.cpp\
-	$$PWD/src/xcs.cpp \
-    $$PWD/src/sprite_batch.cpp \
-    $$PWD/src/texture_loader.cpp \
-    $$PWD/src/debug_draw.cpp \
-    $$PWD/src/xinput.cpp \
-    $$PWD/src/xinput_sdl.cpp \
-    $$PWD/src/xnet.cpp
+    $$PWD/src/xception.cpp

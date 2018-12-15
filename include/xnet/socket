@@ -1,0 +1,45 @@
+#ifndef XQLIB_SOCKET_HPP
+#define XQLIB_SOCKET_HPP
+
+#include <sys/socket.h>
+
+#include "ip"
+
+#include <tuple>
+#include <optional>
+
+namespace xnet
+{
+	struct socket
+	{
+		int handle;
+
+		explicit socket(int socket_handle);
+		socket(int domain, int type, int proto = 0);
+		socket(socket const &) = delete;
+		socket(socket &&);
+		~socket();
+
+		bool bind(endpoint const & addr);
+
+		bool listen(int backlog = 128);
+
+		std::optional<std::tuple<socket, endpoint>> accept();
+
+		bool connect(endpoint const & addr);
+
+		//! reads a set of bytes from the socket.
+		ssize_t read(void * data, size_t length, int flags = 0);
+
+		//! writes a set of bytes to the socket.
+		ssize_t write(void const * data, size_t length, int flags = 0);
+
+		//! reads a packet from the socket.
+		std::tuple<ssize_t, endpoint> read_from(void * data, size_t length, int flags = 0);
+
+		//! writes a packet to the socket.
+		ssize_t write_to(endpoint const & target, void const * data, size_t length, int flags = 0);
+	};
+}
+
+#endif // SOCKET_HPP

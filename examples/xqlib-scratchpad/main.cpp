@@ -14,53 +14,68 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <xnet/http>
+#include <xnet/http/client>
+#include <xnet/http/server>
+#include <xnet/socket>
+#include <xnet/dns>
+#include <xnet/ip>
 
 #include <tuple>
 
-std::tuple<xgl::texture2D, xgl::vertex_array> make_stuff()
+#include <iostream>
+
+int main()
 {
-	xgl::texture2D tex;
-	xgl::vertex_array array;
-	return std::make_tuple(std::move(tex), std::move(array));
+	xnet::http::server server;
+	server.bind(xnet::parse_ipv4("0.0.0.0", 80));
+
+	server.start();
+	while(true)
+	{
+		auto [ request, response ] = server.get_context();
+		if(request.method == "GET")
+		{
+			response.status_code = 202;
+			response.write("you requested the url '");
+			response.write(request.url);
+			response.write("'. be happy with this display!");
+		}
+		else
+		{
+			response.status_code = 405;
+			response.write("not supported.");
+		}
+	}
 }
 
+/*
 int main()
 {
 	xlog::enable_colors(true);
 	xlog::set_verbosity(xlog::message);
-	if(not xapp::init(xapp::opengl, { "XQlib - Experimental Scratchpad" }))
+
+	xnet::socket server(AF_INET, SOCK_STREAM);
+
+	if(not server.bind(xnet::parse_ipv4("127.0.0.1", 8080)))
 		return 1;
 
-	xgl::texture2D texes[] =
+	if(not server.listen())
+		return 2;
+
+	while(true)
 	{
-	  *xgraphics::load_texture("n1.png"),
-	  *xgraphics::load_texture("n2.png"),
-	  *xgraphics::load_texture("n3.png"),
-	  *xgraphics::load_texture("n4.png"),
-	};
-
-	xgraphics::sprite_batch batch;
-
-	auto res = xnet::http().download("https://mq32.de/public/2b.jpg");
-	if(not res)
-		return 1;
-
-	auto tex = xgraphics::load_texture(res->data(), res->size());
-	if(not tex)
-		return 1;
-
-	while(xapp::update())
-	{
-		glClearColor(0.0, 0.0, 0.0, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		batch.begin(glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f));
-		batch.draw(*tex, glm::vec2(0, 0), glm::vec2(600, 800));
-		batch.end();
-
-		xapp::present();
+		auto [ client, addr ] = *server.accept();
+		std::cout << "connection from " << xnet::to_string(addr) << "!" << std::endl;
+		while(true)
+		{
+			std::array<char, 128> data;
+			auto const len = client.read(data.data(), data.size());
+			if(len == 0)
+				break;
+			if(len < 0)
+				return 3;
+			client.write(data.data(), len);
+		}
 	}
-
-	return 0;
 }
+*/

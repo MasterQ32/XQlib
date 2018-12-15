@@ -5,15 +5,15 @@
 #include <vector>
 #include <functional>
 
-namespace xnet
+namespace xnet::http
 {
 	//! Simple frontend for libcurl to allow the download of HTTP files.
-	struct http
+	struct client
 	{
-		http() noexcept;
-		http(http const &) = delete;
-		http(http && other);
-		~http() noexcept;
+		client() noexcept;
+		client(client const &) = delete;
+		client(client && other);
+		~client() noexcept;
 
 		std::optional<std::vector<std::byte>> download(std::string const & url);
 

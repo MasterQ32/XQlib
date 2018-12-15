@@ -10,16 +10,10 @@ namespace xcept
 	struct _Name : std::exception \
 	{ \
 		std::string const msg; \
-    explicit _Name(std::string const & _msg) noexcept : \
-			msg(_msg) \
-		{ \
-		} \
-    virtual ~_Name() noexcept override = default; \
-    virtual const char* what() const noexcept override \
-		{ \
-			return msg.c_str(); \
-		} \
-	};
+    explicit _Name(std::string const & _msg) noexcept; \
+    virtual ~_Name() noexcept override; \
+    virtual const char* what() const noexcept override; \
+	}
 
 	XCEPTION(invalid_argument);
 	XCEPTION(invalid_operation);
