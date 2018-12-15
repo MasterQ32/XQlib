@@ -38,21 +38,14 @@ int main()
 
 		auto stream = response.get_stream();
 
-		stream.write("you requested the url '");
-		stream.write(request.url);
-		stream.write("'. be happy with this display!\n");
+		stream.write_line("URL:    " + request.url);
+		stream.write_line("Method: " + request.method);
+		stream.write_line();
 
-		stream.write("method used: ");
-		stream.write(request.method);
-		stream.write("\n");
-
-		stream.write("Oh, you also sent those headers:\n");
+		stream.write_line("Headers:");
 		for(auto const & header : request.headers)
 		{
-			stream.write(header.first);
-			stream.write(": ");
-			stream.write(header.second);
-			stream.write("\n");
+			stream.write_line(header.first + ": " + header.second);
 		}
 	}
 }

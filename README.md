@@ -180,3 +180,34 @@ int main()
 	}
 }
 ```
+
+### HTTP Server Example
+
+Provides a simple echo service that shows the user the request he made.
+
+```cpp
+int main()
+{
+	xnet::http::server server;
+	if(not server.bind(xnet::parse_ipv4("0.0.0.0", 8080)))
+		return 1;
+
+	std::cout << "ready.\n";
+
+	while(true)
+	{
+		auto [ request, response ] = server.get_context();
+		response.status_code = 200;
+
+		auto stream = response.get_stream();
+
+		stream.write_line("URL:    " + request.url);
+		stream.write_line("Method: " + request.method);
+		stream.write_line();
+
+		stream.write_line("Headers:");
+		for(auto const & header : request.headers)
+			stream.write_line(header.first + ": " + header.second);
+	}
+}
+```

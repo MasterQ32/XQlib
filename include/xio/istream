@@ -44,11 +44,7 @@ namespace xio
 		}
 
 		//! reads a line from the stream char by char.
-		//! ignores all characters in param ignore and stops as soon as a character
-		//! from param delimiter is found.
-		//! @param delimiter A set of characters that signal the end of a line
-		//! @param ignore    A set of characters that are ignored when reading.
-		std::string read_line(char const * delimiter = "\n", char const * ignore = "\r");
+		std::string read_line();
 	};
 }
 

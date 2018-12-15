@@ -34,6 +34,23 @@ namespace xio
 			write(string.data(), string.size());
 		}
 
+		void write_line()
+		{
+			write('\n');
+		}
+
+		void write_line(char const * string)
+		{
+			write(string);
+			write('\n');
+		}
+
+		void write_line(std::string const & string)
+		{
+			write(string);
+			write('\n');
+		}
+
 		template<typename T, size_t N>
 		void write(T const (& array)[N])
 		{

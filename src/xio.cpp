@@ -48,17 +48,15 @@ void xio::istream::read(void * data, size_t length)
 	}
 }
 
-std::string xio::istream::read_line(char const * delimiter, char const * ignore)
+std::string xio::istream::read_line()
 {
 	std::stringstream stream;
-	if(delimiter == nullptr) delimiter = "";
-	if(ignore == nullptr)    ignore = "";
 	while(true)
 	{
 		auto const c = read<char>();
-		if(strchr(ignore, c) != nullptr)
+		if(c == '\r')
 			continue;
-		if(strchr(delimiter, c) != nullptr)
+		if(c == '\n')
 			break;
 		stream << c;
 	}

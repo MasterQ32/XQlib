@@ -481,5 +481,5 @@ xnet::socket_ostream xnet::http::http_response::get_stream()
 	}
 	stream.write("\n");
 
-	return std::move(stream);
+	return stream;
 }
