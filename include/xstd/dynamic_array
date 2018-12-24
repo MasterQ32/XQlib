@@ -1,0 +1,83 @@
+#ifndef XQLIB_DYNAMIC_ARRAY_HPP
+#define XQLIB_DYNAMIC_ARRAY_HPP
+
+#include <cstddef>
+#include <algorithm>
+
+namespace xstd
+{
+	//! non-resizable dynamic array type.
+	template<typename T>
+	struct dynamic_array
+	{
+	private:
+		T * _data;
+		std::size_t _size;
+	public:
+		explicit dynamic_array(std::size_t size) :
+		  _data(new T[size]),
+		  _size(size)
+		{
+
+		}
+
+		dynamic_array(T const * data, std::size_t size) :
+		  _data(new T[size]),
+		  _size(size)
+		{
+			std::copy(data, data + size, this->begin());
+		}
+
+		dynamic_array(dynamic_array const & other) :
+		  _data(new T[other.size()]),
+			_size(other.size())
+		{
+			std::copy(other.begin(), other.end(), this->begin());
+		}
+
+		dynamic_array(dynamic_array && other) :
+		  _data(other._data),
+		  _size(other._size)
+		{
+			other._data = nullptr;
+		}
+
+		~dynamic_array()
+		{
+			if(_data != nullptr)
+				delete[] _data;
+		}
+
+		dynamic_array & operator= (dynamic_array const & other)
+		{
+			// resize only if necessary!
+			if(this->_size != other._size)
+			{
+				delete[] this->_data;
+				this->_data = new T[other._size];
+				this->_size = other._size();
+			}
+			std::copy(other.begin(), other.end(), this->begin());
+			return *this;
+		}
+
+		T & operator[](std::size_t i) { return _data[i]; }
+		T const & operator[](std::size_t i) const { return _data[i]; }
+
+		T & at(std::size_t i) { return _data[i]; }
+		T const & at(std::size_t i) const { return _data[i]; }
+
+		T * data() { return _data; }
+		T const * data() const { return _data; }
+
+		std::size_t size() const { return _size; }
+
+		T * begin() { return _data; }
+		T * end() { return _data + _size; }
+
+		T const * begin() const { return _data; }
+		T const * end()   const { return _data + _size; }
+	};
+}
+
+#endif // DYNAMIC_ARRAY_HPP

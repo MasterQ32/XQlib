@@ -50,18 +50,19 @@ HEADERS += \
 	$$PWD/include/xgraphics/debug_draw \
 	$$PWD/include/xinput/xinput \
 	$$PWD/include/xinput/sdl \
-	$$PWD/include/xcommon \
 	$$PWD/include/xcept \
 	$$PWD/include/xgraphics/shader_compiler \
 	$$PWD/include/xnet/http/client \
-    $$PWD/include/xnet/socket \
-    $$PWD/include/xnet/http/server \
-    $$PWD/include/xnet/dns \
-    $$PWD/include/xnet/ip \
-    $$PWD/include/xio/ostream \
-    $$PWD/include/xio/istream \
-    $$PWD/include/xnet/socket_stream \
-    $$PWD/include/xio/iostream
+	$$PWD/include/xnet/socket \
+	$$PWD/include/xnet/http/server \
+	$$PWD/include/xnet/dns \
+	$$PWD/include/xnet/ip \
+	$$PWD/include/xio/ostream \
+	$$PWD/include/xio/istream \
+	$$PWD/include/xnet/socket_stream \
+	$$PWD/include/xio/iostream \
+    $$PWD/include/xstd/unique_id \
+    $$PWD/include/xstd/dynamic_array
 
 !contains(CONFIG,xqlib_extern):{
 	message("include xqlib source")

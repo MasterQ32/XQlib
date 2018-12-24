@@ -4,11 +4,11 @@
 - Use component system
   - Widget (generic rectangular UI thingy)
     - has: `rect area` (absolute position on the screen)
-    - has: `entity parent`
+    - has: `entity[] children`
   - Layouts
     - Stacking (just pack widget nicely together in one direction)
     - Docking (pack widgets to the edges of their container)
-    - Overflow (similar to *Stacking*, but will overflow into a new row)
+    - Flowing (similar to *Stacking*, but will overflow into a new row)
     - Table (has rows and columns for widgets)
     - Canvas (provides relative positioning to the parent)
   - Controls
@@ -19,11 +19,12 @@
     - TextBox (single line)
     - TextBox (multi line)
     - Picture
+    - Panel
   - Styles
     - provide cascading styling for different controls
-
-
-
-
-
-missing: scrollbox
+    - properties
+      - font
+      - borders
+      - background
+      - foreground
+    - Handle overflow similar to html: `hidden`, `scroll` , `force-size` 

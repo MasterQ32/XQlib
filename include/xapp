@@ -46,8 +46,13 @@ namespace xapp
 		std::string title;     ///< Window title
 		glm::ivec2 resolution; ///< Internal window resolution
 		bool fullscreen;       ///< If set `true`, the application will start in "borderless fullscreen" mode. @ref resolution is ignored.
+		bool resizable;        ///< If set `true`, the application window will be resizable.
 
-		options(std::string const & title = "Untitled XApp", glm::ivec2 resolution = glm::ivec2(1280, 720), bool fullscreen = false);
+		options(
+		    std::string const & title = "Untitled XApp",
+		    glm::ivec2 resolution = glm::ivec2(1280, 720),
+		    bool fullscreen = false,
+		    bool resizable = false);
 	};
 
 	//! Initializes xapp with either `opengl` or `sdl` mode.
@@ -96,6 +101,11 @@ namespace xapp
 	//! shut down.
 	bool update();
 
+	//! Clears the screen with a color.
+	//! For OpenGL mode, it unbinds any active framebuffer and clears the actual
+	//! screen. In SDL mode, it uses the main SDL_Renderer to clear the screen.
+	void clear(glm::vec4 const & color = glm::vec4(0,0,0,1));
+
 	//! Flips the back buffer of either the SDL backend or the OpenGL backend
 	//! and presents the current image.
 	void present();
@@ -105,6 +115,16 @@ namespace xapp
 
 	//! Returns the inner window size of the current xapp window.
 	glm::ivec2 get_screen_resolution();
+
+	//! Returns the inner window width of the current xapp window.
+	inline int width() {
+		return get_screen_resolution().x;
+	}
+
+	//! Returns the inner window height of the current xapp window.
+	inline int height() {
+		return get_screen_resolution().y;
+	}
 
 	//! Enables or disables xinput support in xapp.
 	//! If enabled, xapp automatically calls @ref xinput::begin_update

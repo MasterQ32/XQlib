@@ -85,10 +85,11 @@ SDL_Window * xapp::window = nullptr;
 SDL_Renderer * xapp::renderer = nullptr;
 SDL_GLContext xapp::glcontext = nullptr;
 
-xapp::options::options(std::string const & _title, glm::ivec2 _resolution, bool _fullscreen) :
+xapp::options::options(std::string const & _title, glm::ivec2 _resolution, bool _fullscreen, bool _resizable) :
   title(_title),
   resolution(_resolution),
-  fullscreen(_fullscreen)
+  fullscreen(_fullscreen),
+  resizable(_resizable)
 {
 
 }
@@ -131,6 +132,8 @@ bool xapp::init(xapp::mode mode, options const & opt)
 		flags |= SDL_WINDOW_OPENGL;
 	if(opt.fullscreen)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	if(opt.resizable)
+		flags |= SDL_WINDOW_RESIZABLE;
 
 	xapp::window = SDL_CreateWindow(
 		opt.title.c_str(),
@@ -181,6 +184,25 @@ bool xapp::init(xapp::mode mode, options const & opt)
 		}
 	}
 
+	xapp::set_event_handler<SDL_WINDOWEVENT>([](SDL_WindowEvent const & ev)
+	{
+		switch(ev.event)
+		{
+			case SDL_WINDOWEVENT_RESIZED:
+				switch(init_mode)
+				{
+					case xapp::uninitialized:
+					case xapp::opengl:
+						glViewport(0, 0, ev.data1, ev.data2);
+						break;
+					case xapp::sdl:
+						/* already taken care of by SDL2 */
+						break;
+				}
+				break;
+		}
+	});
+
 	xapp::set_event_handler<SDL_QUIT>([](auto const &)
 	{
 		xapp::shutdown();
@@ -227,6 +249,33 @@ bool xapp::update()
 		xinput::end_update();
 
 	return not quit;
+}
+
+void xapp::clear(glm::vec4 const & color)
+{
+	if(init_mode == xapp::uninitialized)
+	{
+		appError() << "xapp is not initialized!";
+		return;
+	}
+	switch(init_mode)
+	{
+		case xapp::uninitialized:
+		case xapp::opengl:
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+			glClearColor(color.r, color.g, color.b, color.a);
+			glClear(GL_COLOR_BUFFER_BIT);
+			break;
+		case xapp::sdl:
+			SDL_SetRenderDrawColor(
+					renderer,
+					gsl::narrow<Uint8>(std::clamp<int>(static_cast<int>(255.0f * color.r + 0.5f), 0, 255)),
+					gsl::narrow<Uint8>(std::clamp<int>(static_cast<int>(255.0f * color.g + 0.5f), 0, 255)),
+					gsl::narrow<Uint8>(std::clamp<int>(static_cast<int>(255.0f * color.b + 0.5f), 0, 255)),
+					gsl::narrow<Uint8>(std::clamp<int>(static_cast<int>(255.0f * color.a + 0.5f), 0, 255)));
+			SDL_RenderClear(renderer);
+			break;
+	}
 }
 
 void xapp::present()

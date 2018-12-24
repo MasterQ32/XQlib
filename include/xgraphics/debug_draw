@@ -73,7 +73,7 @@ namespace xgraphics
 
 		void aabb(glm::vec3 const & min, glm::vec3 const & max, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
 
-		void box(glm::vec3 const & min, glm::vec3 const & max, glm::mat4 const & transform, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
+		void box(glm::vec3 const & min, glm::vec3 const & max, glm::mat4 const & transform = glm::mat4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1), glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
 
 		void draw(glm::mat4 const & transform);
 

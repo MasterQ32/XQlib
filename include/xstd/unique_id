@@ -1,9 +1,9 @@
-#ifndef XQLIB_XCOMMON_HPP
-#define XQLIB_XCOMMON_HPP
+#ifndef XQLIB_UNIQUE_ID_HPP
+#define XQLIB_UNIQUE_ID_HPP
 
 #include <cstddef>
 
-namespace xcommon
+namespace xstd
 {
 	//! Type-safe generic unique identifier.
 	//!
@@ -26,7 +26,7 @@ namespace xcommon
 		}
 
 		//! returns an invalid id.
-		static constexpr unique_id null() { return {0}; }
+		static constexpr unique_id null() { return unique_id{0}; }
 
 	public: // operator implementations
 		constexpr unique_id & operator= (unique_id const & other) noexcept

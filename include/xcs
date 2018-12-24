@@ -13,14 +13,14 @@
 #include <tuple>
 #include <list>
 
-#include "xcommon"
+#include "xstd/unique_id"
 
 namespace xcs
 {
 	struct entity;
 	struct universe;
 
-	using unique_id = xcommon::unique_id<entity>;
+	using unique_id = xstd::unique_id<entity>;
 
 	template<typename T>
 	constexpr bool is_component() noexcept { return false; }

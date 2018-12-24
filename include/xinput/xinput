@@ -1,15 +1,15 @@
 #ifndef XQLIB_XINPUT_HPP
 #define XQLIB_XINPUT_HPP
 
-#include "xcommon"
+#include "xstd/unique_id"
 
 namespace xinput
 {
 	struct button_tag;
 	struct axis_tag;
 
-	using button = xcommon::unique_id<button_tag>;
-	using axis   = xcommon::unique_id<axis_tag>;
+	using button = xstd::unique_id<button_tag>;
+	using axis   = xstd::unique_id<axis_tag>;
 
 	enum axis_type
 	{
