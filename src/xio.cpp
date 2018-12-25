@@ -6,6 +6,11 @@
 #include <sstream>
 #include <gsl/gsl>
 
+xio::ostream::ostream()
+{
+
+}
+
 xio::ostream::~ostream()
 {
 
@@ -27,6 +32,11 @@ void xio::ostream::write(void const * data, size_t length)
 }
 
 
+
+xio::istream::istream()
+{
+
+}
 
 xio::istream::~istream()
 {
@@ -62,6 +72,7 @@ std::string xio::istream::read_line()
 	}
 	return stream.str();
 }
+
 
 xio::iostream::~iostream()
 {

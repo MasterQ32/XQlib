@@ -24,6 +24,7 @@ include($$PWD/pri/stb.pri)
 include($$PWD/pri/gl3w.pri)
 include($$PWD/pri/curl.pri)
 include($$PWD/pri/enet.pri)
+include($$PWD/pri/imgui.pri)
 
 
 DEFINES += XGL_ENABLE_GLM
@@ -62,7 +63,9 @@ HEADERS += \
 	$$PWD/include/xnet/socket_stream \
 	$$PWD/include/xio/iostream \
     $$PWD/include/xstd/unique_id \
-    $$PWD/include/xstd/dynamic_array
+    $$PWD/include/xstd/dynamic_array \
+    $$PWD/include/xgraphics/turtle_font.hpp \
+    $$PWD/include/imgui
 
 !contains(CONFIG,xqlib_extern):{
 	message("include xqlib source")
@@ -80,4 +83,6 @@ HEADERS += \
 
 SOURCES += \
     $$PWD/src/xception.cpp \
-    $$PWD/src/xio.cpp
+    $$PWD/src/xio.cpp \
+    $$PWD/src/imgui_gl3.cpp \
+    $$PWD/src/imgui_sdl.cpp

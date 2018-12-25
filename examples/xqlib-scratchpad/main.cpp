@@ -26,6 +26,8 @@
 #include <optional>
 #include <functional>
 
+#include <imgui>
+
 int main()
 {
 	xapp::options xapp_options;
@@ -61,12 +63,14 @@ int main()
 		debug.draw(glm::ortho(
 				-0.5f,
 				float(xapp::width() - 0.5),
-				float(xapp::height() - 0.5),
-				-0.5f));
+				-0.5f,
+				float(xapp::height() - 0.5)));
 
+		ImGui::ShowDemoWindow();
 
 		xapp::present();
 	}
+
 	return 0;
 }
 

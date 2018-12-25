@@ -12,6 +12,9 @@ namespace xio
 	//! basic stream for writing data.
 	struct ostream
 	{
+		ostream();
+		ostream(ostream const &) = delete;
+		ostream(ostream &&) = default;
 		virtual ~ostream();
 
 		virtual ssize_t write_raw(void const * data, size_t length) noexcept = 0;

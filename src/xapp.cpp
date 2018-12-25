@@ -1,5 +1,6 @@
 #include "../include/xapp"
 #include "../include/xlog"
+#include "../include/imgui"
 #include "../include/xinput/xinput"
 
 #include <GL/gl3w.h>
@@ -14,7 +15,13 @@ namespace
 
 	xapp::mode init_mode = xapp::uninitialized;
 
+	xapp::options init_options;
+
 	bool quit = false;
+
+	bool had_present = false;
+
+	int exit_code = 0;
 
 	std::list<xapp::event_filter> event_filters;
 
@@ -89,7 +96,8 @@ xapp::options::options(std::string const & _title, glm::ivec2 _resolution, bool 
   title(_title),
   resolution(_resolution),
   fullscreen(_fullscreen),
-  resizable(_resizable)
+  resizable(_resizable),
+  enable_imgui(true)
 {
 
 }
@@ -215,6 +223,38 @@ bool xapp::init(xapp::mode mode, options const & opt)
 	});
 
 	init_mode = mode;
+	init_options = opt;
+
+	if(init_options.enable_imgui)
+	{
+		if(init_mode == xapp::opengl)
+		{
+			IMGUI_CHECKVERSION();
+			ImGui::CreateContext();
+			ImGuiIO& io = ImGui::GetIO(); (void)io;
+			//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+
+			// Setup Dear ImGui style
+			ImGui::StyleColorsDark();
+			//ImGui::StyleColorsClassic();
+
+			// Setup Platform/Renderer bindings
+			ImGui_ImplSDL2_InitForOpenGL(xapp::window);
+			ImGui_ImplOpenGL3_Init();
+
+			xapp::add_event_filter(ImGui_ImplSDL2_ProcessEvent);
+
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplSDL2_NewFrame(xapp::window);
+			ImGui::NewFrame();
+		}
+		else
+		{
+			xlog::log("xapp", xlog::error) << "imgui cannot be used with non-opengl backend. sorry!";
+			// internally disable imgui
+			init_options.enable_imgui = false;
+		}
+	}
 
 	return true;
 }
@@ -223,6 +263,10 @@ bool xapp::update()
 {
 	if(::xinput_active)
 		xinput::begin_update();
+
+	if(not had_present and init_options.enable_imgui)
+		ImGui::EndFrame();
+	had_present = false;
 
 	SDL_Event ev;
 	while(SDL_PollEvent(&ev))
@@ -248,7 +292,14 @@ bool xapp::update()
 	if(::xinput_active)
 		xinput::end_update();
 
-	return not quit;
+	if(init_options.enable_imgui)
+	{
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplSDL2_NewFrame(xapp::window);
+		ImGui::NewFrame();
+	}
+
+	return not ::quit;
 }
 
 void xapp::clear(glm::vec4 const & color)
@@ -285,6 +336,13 @@ void xapp::present()
 		appError() << "xapp is not initialized!";
 		return;
 	}
+
+	if(init_options.enable_imgui)
+	{
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+
 	switch(init_mode)
 	{
 		case xapp::uninitialized:
@@ -295,6 +353,8 @@ void xapp::present()
 			SDL_RenderPresent(xapp::renderer);
 			break;
 	}
+
+	had_present = true;
 }
 
 void xapp::enable_xinput(bool enabled)
@@ -317,9 +377,28 @@ void xapp::remove_event_handler(SDL_EventType type)
 	event_handlers.erase(type);
 }
 
-void xapp::shutdown()
+void xapp::shutdown(int ec)
 {
-	quit = true;
+	if(::exit_code == 0)
+		::exit_code = ec;
+	::quit = true;
+}
+
+int xapp::quit()
+{
+	if(init_options.enable_imgui)
+	{
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplSDL2_Shutdown();
+		ImGui::DestroyContext();
+	}
+
+	SDL_GL_DeleteContext(xapp::glcontext);
+	SDL_DestroyWindow(xapp::window);
+
+	SDL_Quit();
+
+	return ::exit_code;
 }
 
 glm::ivec2 xapp::get_screen_resolution()

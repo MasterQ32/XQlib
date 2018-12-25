@@ -11,6 +11,8 @@ namespace xio
 	//! generic input stream
 	struct istream
 	{
+		istream();
+		istream(istream const &) = delete;
 		virtual ~istream();
 
 		virtual ssize_t read_raw(void * data, size_t length) noexcept = 0;

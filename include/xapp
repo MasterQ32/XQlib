@@ -20,6 +20,21 @@
 //! be installed. Each event filter may prevent all following event filters
 //! and handlers from beeing executed, so other systems (as @ref xinput::sdl)
 //! can handle events.
+//!
+//! ```cpp
+//! int main()
+//! {
+//!		if(not xapp::init(xapp::opengl))
+//!			return 1;
+//!		while(xapp::update())
+//!		{
+//!			xapp::clear();
+//!
+//!			xapp::present();
+//!		}
+//!		return xapp::quit();
+//! }
+//! ```
 namespace xapp
 {
 	extern SDL_Window   * window;
@@ -47,6 +62,7 @@ namespace xapp
 		glm::ivec2 resolution; ///< Internal window resolution
 		bool fullscreen;       ///< If set `true`, the application will start in "borderless fullscreen" mode. @ref resolution is ignored.
 		bool resizable;        ///< If set `true`, the application window will be resizable.
+		bool enable_imgui;     ///< If set `true`, dear imgui support for the main window will be enabled.
 
 		options(
 		    std::string const & title = "Untitled XApp",
@@ -111,7 +127,12 @@ namespace xapp
 	void present();
 
 	//! Notifies the application to shut down. Forces @ref update to return `false`.
-	void shutdown();
+	//! @param exit_code the exit code of the application. Is returned by quit.
+	void shutdown(int exit_code = 0);
+
+	//! Releases all resources taken by the application.
+	//! @returns the exit code passed to shutdown() or zero.
+	int quit();
 
 	//! Returns the inner window size of the current xapp window.
 	glm::ivec2 get_screen_resolution();

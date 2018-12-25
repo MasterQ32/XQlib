@@ -5,7 +5,7 @@
 namespace
 {
 	bool colored_output = false;
-	xlog::log_level min_level = xlog::all;
+	xlog::log_level min_level = xlog::message;
 }
 
 void xlog::enable_colors(bool enabled)
