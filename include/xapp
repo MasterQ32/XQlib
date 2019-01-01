@@ -63,6 +63,7 @@ namespace xapp
 		bool fullscreen;       ///< If set `true`, the application will start in "borderless fullscreen" mode. @ref resolution is ignored.
 		bool resizable;        ///< If set `true`, the application window will be resizable.
 		bool enable_imgui;     ///< If set `true`, dear imgui support for the main window will be enabled.
+		bool enable_vsync;     ///< If set `true`, the render chain will use vsync.
 
 		options(
 		    std::string const & title = "Untitled XApp",
@@ -153,6 +154,9 @@ namespace xapp
 	//! @remarks `xapp::add_event_filter(xinput::process_events)` must still be
 	//!          called manually.
 	void enable_xinput(bool enabled = true);
+
+	//! Returns the delta time between the last two update calls in seconds.
+	float dt();
 }
 
 

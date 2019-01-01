@@ -3,53 +3,111 @@
 #include "../include/xcept"
 
 #include <unordered_map>
+#include <unordered_set>
+#include <cassert>
 
 namespace
 {
-	std::unordered_map<SDL_Scancode, xinput::button> buttonmapping;
+	struct button_map
+	{
+		xinput::button button;
+		std::unordered_set<SDL_Scancode> scancodes;
+		std::unordered_set<int> keycodes;
+		std::unordered_set<int> mousebuttons;
+	};
+
+	std::unordered_map<xinput::button, button_map, xinput::button::hash> _map;
+
+
+	button_map & mapping(xinput::button btn)
+	{
+		auto it = _map.find(btn);
+		if(it != _map.end())
+		{
+			return it->second;
+		}
+		auto [ n, c ] = _map.emplace(btn, button_map { });
+		assert(c);
+		n->second.button = btn;
+		return n->second;
+	}
 }
 
 bool xinput::sdl::process_event(SDL_Event const & ev)
 {
 	if((ev.type == SDL_KEYDOWN) or (ev.type == SDL_KEYUP))
 	{
-		auto it = buttonmapping.find(ev.key.keysym.scancode);
-		if(it == buttonmapping.end())
-			return false;
-		xinput::update_button(it->second, (ev.type == SDL_KEYDOWN));
-		return true;
+		bool used = false;
+		for(auto const & entry : _map)
+		{
+			if(entry.second.scancodes.count(ev.key.keysym.scancode) > 0)
+			{
+				xinput::update_button(entry.first, (ev.type == SDL_KEYDOWN));
+				used = true;
+			}
+
+			if(entry.second.keycodes.count(ev.key.keysym.sym) > 0)
+			{
+				xinput::update_button(entry.first, (ev.type == SDL_KEYDOWN));
+				used = true;
+			}
+		}
+		return used;
+	}
+	if((ev.type == SDL_MOUSEBUTTONDOWN) or (ev.type == SDL_MOUSEBUTTONUP))
+	{
+		bool used = false;
+		for(auto const & entry : _map)
+		{
+			if(entry.second.mousebuttons.count(ev.button.button) > 0)
+			{
+				xinput::update_button(entry.first, (ev.type == SDL_MOUSEBUTTONDOWN));
+				used = true;
+			}
+		}
+		return used;
 	}
 	return false;
 }
 
 void xinput::sdl::clear_mapping()
 {
-	buttonmapping.clear();
+	_map.clear();
 }
 
 void xinput::sdl::clear_mapping_for(button btn)
 {
-	for(auto it = buttonmapping.begin(); it != buttonmapping.end();)
+	_map.erase(btn);
+}
+
+void xinput::sdl::add_mapping(button btn, button_type type, int value)
+{
+	switch(type)
 	{
-		if(it->second == btn)
-		{
-			auto old = it++;
-			buttonmapping.erase(old);
-		}
-		else
-		{
-			++it;
-		}
+		case scancode:
+				mapping(btn).scancodes.emplace(static_cast<SDL_Scancode>(value));
+				break;
+		case keycode:
+				mapping(btn).keycodes.emplace(value);
+				break;
+		case mouse_button:
+				mapping(btn).mousebuttons.emplace(value);
+				break;
 	}
 }
 
-void xinput::sdl::add_mapping(button btn, SDL_Scancode scancode)
+void xinput::sdl::remove_mapping(button btn, button_type type, int value)
 {
-	if(buttonmapping.emplace(scancode, btn).second == false)
-		throw xcept::invalid_argument("scancode already has a button assigned!");
-}
-
-void xinput::sdl::remove_mapping(button, SDL_Scancode scancode)
-{
-	buttonmapping.erase(scancode);
+	switch(type)
+	{
+		case scancode:
+				mapping(btn).scancodes.erase(static_cast<SDL_Scancode>(value));
+				break;
+		case keycode:
+				mapping(btn).keycodes.erase(value);
+				break;
+		case mouse_button:
+				mapping(btn).mousebuttons.erase(value);
+				break;
+	}
 }

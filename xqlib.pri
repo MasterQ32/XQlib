@@ -65,7 +65,8 @@ HEADERS += \
     $$PWD/include/xstd/unique_id \
     $$PWD/include/xstd/dynamic_array \
     $$PWD/include/xgraphics/turtle_font.hpp \
-    $$PWD/include/imgui
+    $$PWD/include/imgui \
+    $$PWD/include/xgraphics/colors
 
 !contains(CONFIG,xqlib_extern):{
 	message("include xqlib source")

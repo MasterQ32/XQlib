@@ -7,11 +7,18 @@
 
 namespace xinput::sdl
 {
+	enum button_type
+	{
+		scancode = 0,
+		keycode = 1,
+		mouse_button = 2,
+	};
+
 	void clear_mapping();
 	void clear_mapping_for(button btn);
 
-	void add_mapping(button btn, SDL_Scancode scancode);
-	void remove_mapping(button btn, SDL_Scancode scancode);
+	void add_mapping   (button btn, button_type type, int value);
+	void remove_mapping(button btn, button_type type, int value);
 
 	void add_mapping(axis ax, SDL_Scancode scancode, float delta);
 

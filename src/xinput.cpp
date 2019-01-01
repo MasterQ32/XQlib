@@ -58,6 +58,8 @@ void xinput::begin_update()
 	{
 		axis.last_value = axis.value;
 		axis.any_input = false;
+		if(axis.type == relative)
+			axis.value = 0.0f;
 	}
 }
 

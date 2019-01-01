@@ -22,7 +22,7 @@ namespace xcs
 
 	using unique_id = xstd::unique_id<entity>;
 
-	template<typename T>
+	template<typename Component>
 	constexpr bool is_component() noexcept { return false; }
 
 	inline std::ostream & operator<<(std::ostream & stream, unique_id id)
@@ -37,6 +37,15 @@ namespace xcs
 		unique_id const id;
 
 		explicit entity(struct universe & _universe, unique_id _id) : universe(_universe), id(_id) { }
+		entity(entity const &) = default;
+		entity(entity &&) = default;
+
+		entity & operator= (entity const & other)
+		{
+			this->~entity();
+			new (this) entity(other);
+			return *this;
+		}
 	};
 
 	struct component_store_base
@@ -45,18 +54,18 @@ namespace xcs
 
 		virtual void add_generic(unique_id ent) = 0;
 
-		virtual bool exists(unique_id id) = 0;
+		virtual bool exists(unique_id id) const = 0;
 
 		virtual bool remove(unique_id id) = 0;
 
 		virtual void cleanup() = 0;
 	};
 
-	template<typename T>
+	template<typename Component>
 	struct component_store : component_store_base
 	{
-		static_assert(is_component<T>, "T must be a registered component type!");
-		using Storage = std::list<std::pair<unique_id, T>>;
+		static_assert(is_component<Component>, "Component must be a registered component type!");
+		using Storage = std::list<std::pair<unique_id, Component>>;
 
 		universe & universe;
 
@@ -74,7 +83,7 @@ namespace xcs
 		~component_store() noexcept override = default;
 
 	public:
-		T * get(unique_id ent)
+		Component * get(unique_id ent) const
 		{
 			auto pos = access.find(ent);
 			if(pos != access.end())
@@ -83,19 +92,19 @@ namespace xcs
 				return nullptr;
 		}
 
-		bool exists(unique_id id) override
+		bool exists(unique_id id) const override
 		{
 			return (get(id) != nullptr);
 		}
 
-		T & add(unique_id ent)
+		Component & add(unique_id ent)
 		{
 			if(ent.value == 0)
 				abort();
 
 			if(auto * ptr = get(ent); ptr != nullptr)
 				return *ptr;
-			auto it = contents.emplace(contents.end(), ent, T { });
+			auto it = contents.emplace(contents.end(), ent, Component { });
 			access.emplace(ent, it);
 			return it->second;
 		}
@@ -127,8 +136,8 @@ namespace xcs
 		template<typename TComponent>
 		using entity_component_t = std::tuple<const entity, TComponent &>;
 
-		using entity_component = entity_component_t<T>;
-		using const_entity_component = entity_component_t<const T>;
+		using entity_component = entity_component_t<Component>;
+		using const_entity_component = entity_component_t<const Component>;
 
 		template<typename TStore, typename TNode, typename TIterator>
 		struct iterator_t
@@ -206,7 +215,7 @@ namespace xcs
 		static meta_component_base const * find(std::string const & name);
 	};
 
-	template<typename T>
+	template<typename Component>
 	struct meta_component : meta_component_base
 	{
 		explicit meta_component(std::string const & name) : meta_component_base(name) { }
@@ -214,18 +223,19 @@ namespace xcs
 
 		std::unique_ptr<component_store_base> create_store(universe & universe) const override
 		{
-			return std::make_unique<component_store<T>>(universe);
+			return std::make_unique<component_store<Component>>(universe);
 		}
 	};
 
-	template<typename T>
-	meta_component<T> const & get_meta_component() noexcept
+	template<typename Component>
+	meta_component<Component> const & get_meta_component() noexcept
 	{
-		static_assert(is_component<T>(), "Type is not a registered component!");
+		static_assert(is_component<Component>(), "Type is not a registered component!");
 		throw;
 	}
 
 	#define XCS_REGISTER_COMPONENT(_Type) \
+		static_assert(std::is_default_constructible_v<_Type>, #_Type " must be default constructible!"); \
 		template<> inline bool ::xcs::is_component<_Type>() noexcept { return true; } \
 		inline ::xcs::meta_component<_Type> __##_Type##component { #_Type }; \
 		template<> inline ::xcs::meta_component<_Type> const & ::xcs::get_meta_component<_Type>() noexcept { \
@@ -267,11 +277,11 @@ namespace xcs
 				return std::nullopt;
 		}
 
-		std::optional<entity> find_entity(unique_id id)
+		std::optional<entity> find_entity(unique_id id) const
 		{
 			auto it = entities.find(id);
 			if(it != entities.end())
-				return entity { *this, *it };
+				return entity { const_cast<universe&>(*this), *it };
 			else
 				return std::nullopt;
 		}
@@ -299,6 +309,15 @@ namespace xcs
 			this->deleted_entities.clear();
 		}
 
+		//! removes all entities from this universe.
+		//! @remarks Requires a call to @ref cleanup afterwards.
+		void clear()
+		{
+			for(auto ent : this->entities)
+				this->deleted_entities.push_back(ent);
+			this->entities.clear();
+		}
+
 	private:
 		component_store_base & get_component_store(meta_component_base const & meta) const
 		{
@@ -309,16 +328,16 @@ namespace xcs
 			return *component_stores.at(meta.id).get();
 		}
 	public:
-		template<typename T>
-		component_store<T> & get_components()
+		template<typename Component>
+		component_store<Component> & get_components()
 		{
-			return static_cast<component_store<T>&>(get_component_store(get_meta_component<T>()));
+			return static_cast<component_store<Component>&>(get_component_store(get_meta_component<Component>()));
 		}
 
-		template<typename T>
-		component_store<T> const & get_components() const
+		template<typename Component>
+		component_store<Component> const & get_components() const
 		{
-			return static_cast<component_store<T>&>(get_component_store(get_meta_component<T>()));
+			return static_cast<component_store<Component>&>(get_component_store(get_meta_component<Component>()));
 		}
 
 		component_store_base & get_components(std::string const & name)
@@ -334,32 +353,37 @@ namespace xcs
 
 	// Typed API:
 
-	template<typename T>
-	inline T & add_component(entity ent) noexcept
+	//! Adds a component to an entity.
+	template<typename Component>
+	inline Component & add_component(entity ent) noexcept
 	{
-		return ent.universe.get_components<T>().add(ent.id);
+		return ent.universe.get_components<Component>().add(ent.id);
 	}
 
-	template<typename T>
+	//! Checks if a certain component exists.
+	template<typename Component>
 	inline bool has_component(entity ent) noexcept
 	{
-		return ent.universe.get_components<T>().exists(ent.id);
+		return ent.universe.get_components<Component>().exists(ent.id);
 	}
 
-	template<typename T>
-	inline T * get_component(entity ent) noexcept
+	//! Returns a pointer to a component or `nullptr` if it does not exist.
+	template<typename Component>
+	inline Component * get_component(entity ent) noexcept
 	{
-		return ent.universe.get_components<T>().get(ent.id);
+		return ent.universe.get_components<Component>().get(ent.id);
 	}
 
-	template<typename T>
+	//! Removes a component from an entity.
+	template<typename Component>
 	inline bool remove_component(entity ent) noexcept
 	{
-		return ent.universe.get_components<T>().remove(ent.id);
+		return ent.universe.get_components<Component>().remove(ent.id);
 	}
 
 	// Named API:
 
+	//! Adds a component by class name.
 	inline bool add_component(entity ent, std::string const & name) noexcept
 	{
 		if(meta_component_base::find(name) == nullptr)
@@ -368,6 +392,7 @@ namespace xcs
 		return true;
 	}
 
+	//! Checks for a component by class name.
 	inline bool has_component(entity ent, std::string const & name) noexcept
 	{
 		if(meta_component_base::find(name) == nullptr)
@@ -375,6 +400,7 @@ namespace xcs
 		return ent.universe.get_components(name).exists(ent.id);
 	}
 
+	//! Removes a component by class name.
 	inline bool remove_component(entity ent, std::string const & name) noexcept
 	{
 		if(meta_component_base::find(name) == nullptr)
@@ -384,18 +410,23 @@ namespace xcs
 
 	// helper for component stores in a universe
 
-	template<typename T>
-	inline component_store<T> & get_components(universe & universe) noexcept
+	//! Gets the list of components for a specific component type and universe.
+	template<typename Component>
+	inline component_store<Component> & get_components(universe & universe) noexcept
 	{
-		return universe.get_components<T>();
+		return universe.get_components<Component>();
 	}
 
-	template<typename T>
-	inline component_store<T> const & get_components(universe const & universe) noexcept
+	//! Gets the list of components for a specific component type and universe.
+	template<typename Component>
+	inline component_store<Component> const & get_components(universe const & universe) noexcept
 	{
-		return universe.get_components<T>();
+		return universe.get_components<Component>();
 	}
 
+	//! Marks an entity for deletion.
+	//! This allows deleting an entity while iterating over components or
+	//! entities.
 	inline void delete_later(entity ent) noexcept
 	{
 		ent.universe.destroy_entity_later(ent);

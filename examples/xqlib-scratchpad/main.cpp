@@ -28,6 +28,8 @@
 
 #include <imgui>
 
+#include <iso646.h>
+
 int main()
 {
 	xapp::options xapp_options;
@@ -38,12 +40,81 @@ int main()
 
 	xgraphics::debug_draw debug;
 
+	xgl::shader vsh(GL_VERTEX_SHADER);
+
+	vsh.source(R"glsl(#version 330
+	out vec2 v_uv;
+	void main()
+	{
+		v_uv.x = float(gl_VertexID % 2);
+		v_uv.y = float(gl_VertexID / 2);
+		gl_Position = vec4(0.5, 0.5, 0, 1) * vec4(2.0 * v_uv - 1.0, 0.0, 1.0);
+	}
+	)glsl");
+	vsh.compile();
+
+	xgl::shader gsh(GL_GEOMETRY_SHADER);
+	gsh.source(R"glsl(#version 330
+	layout(triangles) in;
+	layout(line_strip, max_vertices = 32) out;
+
+	in vec2 v_uv[];
+	out vec2 f_uv;
+
+	uniform float uTime;
+
+	void main()
+	{
+		for(int i = 0; i < 3; i++)
+		{
+			f_uv = vec2(1, 0);
+			gl_Position = gl_in[(i + 0) % 3].gl_Position;
+			EmitVertex();
+
+			f_uv = vec2(0, 1);
+			gl_Position = gl_in[(i + 1) % 3].gl_Position;
+			EmitVertex();
+
+			EndPrimitive();
+		}
+	}
+	)glsl");
+	gsh.compile();
+
+	xgl::shader fsh(GL_FRAGMENT_SHADER);
+	fsh.source(R"glsl(#version 330
+	out vec4 fragment;
+	in vec2 f_uv;
+	void main()
+	{
+		fragment = vec4(f_uv, 0, 1);
+	}
+	)glsl");
+	fsh.compile();
+
+
+	xgl::program porno;
+	porno << vsh << gsh << fsh;
+	porno.link();
+
+	xgl::vertex_array vao;
+
+
+	float p = 0;
 	while(xapp::update())
 	{
 		using glm::vec3;
 
 		xapp::clear();
 
+		vao.bind();
+		porno.use();
+
+		porno.uniform("uTime", p);
+
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		/*2
 		auto const right = xapp::width() - 1;
 		auto const top = xapp::height() - 1;
 
@@ -65,10 +136,13 @@ int main()
 				float(xapp::width() - 0.5),
 				-0.5f,
 				float(xapp::height() - 0.5)));
+		*/
 
-		ImGui::ShowDemoWindow();
+		// ImGui::ShowDemoWindow();
 
 		xapp::present();
+
+		p += xapp::dt();
 	}
 
 	return 0;

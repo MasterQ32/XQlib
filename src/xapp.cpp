@@ -8,6 +8,9 @@
 #include <gsl/gsl>
 #include <map>
 #include <list>
+#include <chrono>
+
+using std::chrono::high_resolution_clock;
 
 namespace
 {
@@ -26,6 +29,8 @@ namespace
 	std::list<xapp::event_filter> event_filters;
 
 	std::map<SDL_EventType, xapp::event_handler> event_handlers;
+
+	high_resolution_clock::time_point last_frame, this_frame;
 
 	xlog::log appError()
 	{
@@ -97,7 +102,8 @@ xapp::options::options(std::string const & _title, glm::ivec2 _resolution, bool 
   resolution(_resolution),
   fullscreen(_fullscreen),
   resizable(_resizable),
-  enable_imgui(true)
+  enable_imgui(true),
+  enable_vsync(true)
 {
 
 }
@@ -168,6 +174,11 @@ bool xapp::init(xapp::mode mode, options const & opt)
 				xapp::window = nullptr;
 				return false;
 			}
+
+			if(opt.enable_vsync)
+				SDL_GL_SetSwapInterval(1);
+			else
+				SDL_GL_SetSwapInterval(0);
 
 			if(gl3wInit() < 0)
 			{
@@ -256,11 +267,16 @@ bool xapp::init(xapp::mode mode, options const & opt)
 		}
 	}
 
+	this_frame = last_frame = high_resolution_clock::now();
+
 	return true;
 }
 
 bool xapp::update()
 {
+	last_frame = this_frame;
+	this_frame = high_resolution_clock::now();
+
 	if(::xinput_active)
 		xinput::begin_update();
 
@@ -406,4 +422,10 @@ glm::ivec2 xapp::get_screen_resolution()
 	glm::ivec2 result;
 	SDL_GetWindowSize(xapp::window, &result.x, &result.y);
 	return result;
+}
+
+float xapp::dt()
+{
+	auto const ms = std::chrono::duration_cast<std::chrono::microseconds>(this_frame - last_frame).count();
+	return float(ms * double(std::micro::num) / double(std::micro::den));
 }
