@@ -1,0 +1,22 @@
+#ifndef XQLIB_INTERSECT_HPP
+#define XQLIB_INTERSECT_HPP
+
+#include "../../xstd/optional"
+
+namespace xm3d
+{
+	struct plane;
+	struct ray;
+	struct aabb;
+
+	struct ray_box_hit
+	{
+		float near, far;
+	};
+
+	xstd::optional<ray_box_hit> intersect(aabb const & box, ray const & ray);
+
+	xstd::optional<float> intersect(plane const & plane, ray const & ray);
+}
+
+#endif // INTERSECT_HPP

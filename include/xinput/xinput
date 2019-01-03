@@ -65,6 +65,9 @@ namespace xinput
 	//! @param type Either `relative` or `absolute`
 	void register_axis(axis axis, axis_type type);
 
+	//! Returns the type this axis was registered with.
+	axis_type get_axis_type(axis axis);
+
 	//! Returns a normalized value between -1.0 and 1.0 for relative
 	//! axes and the non-normalized value for absolute axis.
 	float value(axis axis);

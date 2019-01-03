@@ -1,0 +1,15 @@
+#ifndef XQLIB_RAY_HPP
+#define XQLIB_RAY_HPP
+
+#include <glm/glm.hpp>
+
+namespace xm3d
+{
+	struct ray
+	{
+		glm::vec3 origin;
+		glm::vec3 direction;
+	};
+}
+
+#endif // RAY_HPP

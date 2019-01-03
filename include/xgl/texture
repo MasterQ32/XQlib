@@ -71,7 +71,7 @@ namespace xgl
 		}
 
 		template<typename T>
-		T get_parameter(GLenum key)
+		T getParameter(GLenum key)
 		{
 			T value;
 			if constexpr(std::is_integral_v<T>())
@@ -84,7 +84,7 @@ namespace xgl
 		}
 
 		template<typename T>
-		T get_level_parameter(GLenum key, int level)
+		T getLevelParameter(GLenum key, int level)
 		{
 			T value;
 			if constexpr(std::is_integral_v<T>())
@@ -94,6 +94,34 @@ namespace xgl
 			else
 				static_assert(dependent_false<T>::value, "T not supported");
 			return value;
+		}
+
+		void getSubImage(GLint level,
+										 GLint xoffset,
+										 GLint yoffset,
+										 GLint zoffset,
+										 GLsizei width,
+										 GLsizei height,
+										 GLsizei depth,
+										 GLenum format,
+										 GLenum type,
+										 GLsizei bufSize,
+										 void *pixels)
+		{
+			glGetTextureSubImage(id, level, xoffset, yoffset, zoffset, width, height, depth, format, type, bufSize, pixels);
+		}
+
+		void getSubImage2D(GLint level,
+										 GLint xoffset,
+										 GLint yoffset,
+										 GLsizei width,
+										 GLsizei height,
+										 GLenum format,
+										 GLenum type,
+										 GLsizei bufSize,
+										 void *pixels)
+		{
+			getSubImage(level, xoffset, yoffset, 0, width, height, 1, format, type, bufSize, pixels);
 		}
 
 	public:

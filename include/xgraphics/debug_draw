@@ -59,7 +59,7 @@ namespace xgraphics
 
 		bool autoClear;
 
-		float pointSize;
+		float point_size;
 
 		explicit debug_draw(bool autoClear = true);
 

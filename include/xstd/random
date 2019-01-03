@@ -1,0 +1,18 @@
+#ifndef XQLIB_RANDOM_HPP
+#define XQLIB_RANDOM_HPP
+
+#include <random>
+#include <array>
+
+namespace xstd
+{
+	template<typename Rng, typename ... Args >
+	inline auto sample(Rng & rng, Args const & ... args)
+	{
+		std::array list = { args ... };
+		std::uniform_int_distribution<size_t> dist(0, list.size() - 1);
+		return list[dist(rng)];
+	}
+}
+
+#endif // RANDOM_HPP

@@ -41,7 +41,7 @@ xgraphics::debug_draw::debug_draw(bool auto_clear) :
     line_vertices(),
     tris_vertices(),
     autoClear(auto_clear),
-    pointSize(5.0f)
+    point_size(5.0f)
 {
 	{
 		xgl::shader vsh(GL_VERTEX_SHADER);
@@ -146,7 +146,7 @@ void xgraphics::debug_draw::draw(glm::mat4 const & transform)
 
 	if(point_vertices.size() > 0)
 	{
-		glPointSize(pointSize);
+		glPointSize(point_size);
 		vertex_buffer.data(point_vertices, GL_DYNAMIC_DRAW);
 		glDrawArrays(
 			GL_POINTS,
@@ -170,7 +170,7 @@ void xgraphics::debug_draw::draw(glm::mat4 const & transform)
 		glDisable(GL_CULL_FACE);
 
 		glEnable(GL_POLYGON_OFFSET_FILL);
-		glPolygonOffset(0.1f, 1.0f);
+		glPolygonOffset(0.15f, 2.0f);
 
 		glDrawArrays(
 			GL_TRIANGLES,

@@ -165,6 +165,12 @@ void xinput::register_axis(axis axis, axis_type type)
 	V(axis).type = type;
 }
 
+//! Returns the type this axis was registered with.
+xinput::axis_type xinput::get_axis_type(axis axis)
+{
+	return V(axis).type;
+}
+
 float xinput::value(axis axis)
 {
 	check_updating();

@@ -14,6 +14,7 @@
 #include <list>
 
 #include "xstd/unique_id"
+#include "xstd/reference_equals"
 
 namespace xcs
 {
@@ -45,6 +46,14 @@ namespace xcs
 			this->~entity();
 			new (this) entity(other);
 			return *this;
+		}
+
+		bool operator== (entity const & other) const {
+			return xstd::reference_equals(universe, other.universe) and (id == other.id);
+		}
+
+		bool operator!= (entity const & other) const {
+			return not (*this == other);
 		}
 	};
 

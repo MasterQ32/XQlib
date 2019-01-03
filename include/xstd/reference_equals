@@ -1,0 +1,13 @@
+#ifndef XQLIB_REFERENCE_EQUALS_HPP
+#define XQLIB_REFERENCE_EQUALS_HPP
+
+namespace xstd
+{
+	template<typename T>
+	bool reference_equals(T const & lhs, T const & rhs)
+	{
+		return (&lhs == &rhs);
+	}
+}
+
+#endif // REFERENCE_EQUALS_HPP

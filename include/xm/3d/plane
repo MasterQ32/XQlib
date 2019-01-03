@@ -1,0 +1,20 @@
+#ifndef XQLIB_PLANE_HPP
+#define XQLIB_PLANE_HPP
+
+#include <glm/glm.hpp>
+
+namespace xm3d
+{
+	struct plane
+	{
+		glm::vec3 origin;
+		glm::vec3 bitangent;
+		glm::vec3 tangent;
+
+		glm::vec3 normal() const {
+			return glm::cross(bitangent, tangent);
+		}
+	};
+}
+
+#endif // PLANE_HPP

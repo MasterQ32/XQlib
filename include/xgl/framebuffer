@@ -1,0 +1,84 @@
+#ifndef XQLIB_FRAMEBUFFER_HPP
+#define XQLIB_FRAMEBUFFER_HPP
+
+
+#include <GL/gl3w.h>
+#include <utility>
+#include <vector>
+#include <array>
+
+#include "texture"
+
+namespace xgl
+{
+	struct framebuffer
+	{
+		GLuint id;
+
+	public:
+		framebuffer() {
+			glCreateFramebuffers(1, &id);
+		}
+
+		framebuffer(framebuffer const &) = delete;
+
+		framebuffer(framebuffer && other) : id(other.id) {
+			other.id = 0;
+		}
+
+		~framebuffer()
+		{
+			if(id != 0)
+				glDeleteFramebuffers(1, &id);
+		}
+	public:
+
+		void bind(GLenum target = GL_FRAMEBUFFER)
+		{
+			glBindFramebuffer(target, id);
+		}
+
+		void drawBuffer(GLenum drawBuffer)
+		{
+			glNamedFramebufferDrawBuffer(id, drawBuffer);
+		}
+
+		void drawBuffers(std::vector<GLenum> drawBuffers)
+		{
+			glNamedFramebufferDrawBuffers(id, gsl::narrow<GLsizei>(drawBuffers.size()), drawBuffers.data());
+		}
+
+		template<size_t N>
+		void drawBuffers(std::array<GLenum, N> drawBuffers)
+		{
+			glNamedFramebufferDrawBuffers(id, gsl::narrow<GLsizei>(N), drawBuffers.data());
+		}
+
+		void texture(GLenum attachment, GLuint texture, GLint level)
+		{
+			glNamedFramebufferTexture(id, attachment, texture, level);
+		}
+
+		template<GLenum TARGET>
+		void texture(GLenum attachment, xgl::texture<TARGET> const & texture, GLint level)
+		{
+			glNamedFramebufferTexture(id, attachment, texture, level);
+		}
+
+		GLenum status(GLenum target = GL_FRAMEBUFFER) const
+		{
+			return glCheckNamedFramebufferStatus(id, target);
+		}
+
+	public:
+		operator GLuint () const {
+			return id;
+		}
+
+		operator bool() const {
+			return (id != 0);
+		}
+	};
+}
+
+#endif // FRAMEBUFFER_HPP
