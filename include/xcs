@@ -433,6 +433,12 @@ namespace xcs
 		return universe.get_components<Component>();
 	}
 
+	//! Creates a new entity in the given universe.
+	inline xcs::entity add_entity(xcs::universe & universe)
+	{
+		return universe.create_entity();
+	}
+
 	//! Marks an entity for deletion.
 	//! This allows deleting an entity while iterating over components or
 	//! entities.

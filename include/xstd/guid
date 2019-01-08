@@ -1,0 +1,16 @@
+#ifndef XQLIB_GUID_HPP
+#define XQLIB_GUID_HPP
+
+#include <array>
+#include <string>
+
+namespace xstd
+{
+	using guid = std::array<std::byte, 16>;
+
+	std::string to_string(guid const & guid);
+
+	guid parse_guid(std::string const & text);
+}
+
+#endif // XQLIB_GUID_HPP

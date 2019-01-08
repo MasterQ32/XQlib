@@ -6,4 +6,4 @@
 
 QMAKE_CFLAGS   += -isystem $$quote($$PWD/../extern/enet/include)
 QMAKE_CXXFLAGS += -isystem $$quote($$PWD/../extern/enet/include)
-QMAKE_LFLAGS   += $$quote($$PWD/../extern/enet/.libs/libenet.a)
+LIBS           += $$quote($$PWD/../extern/enet/.libs/libenet.a)

@@ -74,6 +74,30 @@ std::string xio::istream::read_line()
 }
 
 
+//! Reads bytes until the end of stream is reached.
+std::vector<std::byte> xio::istream::read_to_end()
+{
+	size_t const block_size = (1<<20); // read 1 MB blocks
+
+	std::vector<std::byte> result;
+	result.reserve(10<<20); // Reserve 10 MB
+	while(true)
+	{
+		auto const start = result.size();
+		result.resize(start + block_size);
+
+		auto const count = read_raw(&result[start], block_size);
+		if(count < 0)
+			throw xcept::io_error("failed to read data.");
+		else if(count == 0)
+			break;
+		else
+			result.resize(start + gsl::narrow_cast<size_t>(count));
+	}
+	return result;
+}
+
+
 xio::iostream::~iostream()
 {
 

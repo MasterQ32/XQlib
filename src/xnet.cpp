@@ -1,5 +1,6 @@
 #include "../include/xnet/http/client"
 #include "../include/xnet/http/server"
+#include "../include/xnet/http/utility"
 #include "../include/xnet/socket"
 #include "../include/xnet/socket_stream"
 #include "../include/xnet/dns"
@@ -482,4 +483,31 @@ xnet::socket_ostream xnet::http::http_response::get_stream()
 	stream.write("\n");
 
 	return stream;
+}
+
+
+
+std::string xnet::http::url_encode(std::string const & src)
+{
+	static char const * const allowed_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.!*()";
+	std::string result = "";
+	result.reserve(2 * src.size());
+	for(size_t i = 0; i < src.size(); i++)
+	{
+		char c = src[i];
+		if(strchr(allowed_chars, c) != nullptr)
+			result.append(1, c);
+		else {
+			static char const * const hexlut = "0123456789ABCDEF";
+			result.append("%");
+			result.append(1, hexlut[(c & 0xF0) >> 4]);
+			result.append(1, hexlut[(c & 0x0F) >> 0]);
+		}
+	}
+	return result;
+}
+
+std::string xnet::http::url_decode(std::string const & src)
+{
+	abort();
 }

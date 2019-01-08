@@ -1,0 +1,12 @@
+#ifndef XQLIB_HTTP_UTILITY_HPP
+#define XQLIB_HTTP_UTILITY_HPP
+
+#include <string>
+
+namespace xnet::http
+{
+	std::string url_encode(std::string const & src);
+	std::string url_decode(std::string const & src);
+}
+
+#endif // XQLIB_HTTP_UTILITY_HPP

@@ -26,7 +26,7 @@ include($$PWD/pri/curl.pri)
 include($$PWD/pri/enet.pri)
 include($$PWD/pri/imgui.pri)
 include($$PWD/pri/optional.pri)
-
+include($$PWD/pri/json.pri)
 
 DEFINES += XGL_ENABLE_GLM
 
@@ -75,7 +75,10 @@ HEADERS += \
     $$PWD/include/xm/3d/plane \
     $$PWD/include/xm/3d/ray \
     $$PWD/include/xm/3d/intersect \
-    $$PWD/include/xm/3d/aabb
+    $$PWD/include/xm/3d/aabb \
+    $$PWD/include/xstd/resource \
+    $$PWD/include/xstd/guid \
+    $$PWD/include/xnet/http/utility
 
 !contains(CONFIG,xqlib_extern):{
 	message("include xqlib source")
@@ -88,12 +91,11 @@ HEADERS += \
 		$$PWD/src/debug_draw.cpp \
 		$$PWD/src/xinput.cpp \
 		$$PWD/src/xinput_sdl.cpp \
-		$$PWD/src/xnet.cpp
-}
-
-SOURCES += \
+		$$PWD/src/xnet.cpp \
     $$PWD/src/xception.cpp \
     $$PWD/src/xio.cpp \
     $$PWD/src/imgui_gl3.cpp \
     $$PWD/src/imgui_sdl.cpp \
-    $$PWD/src/xm3d.cpp
+    $$PWD/src/xm3d.cpp \
+    $$PWD/src/guid.cpp
+}

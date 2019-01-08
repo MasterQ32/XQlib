@@ -45,6 +45,9 @@ namespace xio
 			return array;
 		}
 
+		//! Reads bytes until the end of stream is reached.
+		std::vector<std::byte> read_to_end();
+
 		//! reads a line from the stream char by char.
 		std::string read_line();
 	};

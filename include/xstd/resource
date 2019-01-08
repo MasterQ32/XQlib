@@ -1,0 +1,56 @@
+#ifndef XQLIB_RESOURCE_HPP
+#define XQLIB_RESOURCE_HPP
+
+namespace xstd
+{
+	//! A simple wrapper for C resources.
+	//! Requires a static deleter function.
+	//! @tparam T The type of the resource.
+	//! @tparam Deleter The deleter function that will release this resource.
+	template<typename T, void (*Deleter)(T * value)>
+	struct resource
+	{
+	private:
+		T * _value;
+	public:
+		resource() : _value(nullptr) { }
+		explicit resource(T * value) : _value(value) { }
+		resource(resource const &) = delete;
+		resource(resource && other) : _value(other._value)
+		{
+			other._value = nullptr;
+		}
+		~resource()
+		{
+			if(_value != nullptr)
+				Deleter(_value);
+		}
+
+	public:
+		void reset()
+		{
+			*this = resource();
+		}
+
+		T * release()
+		{
+			auto * result = _value;
+			_value = nullptr;
+			return result;
+		}
+
+		T * get()             { return _value; }
+		T const * get() const { return _value; }
+
+	public:
+		T &       operator*()        { return *_value; }
+		T const & operator*() const  { return *_value; }
+
+		T *       operator->()       { return _value; }
+		T const * operator->() const { return _value; }
+
+		operator bool() const { return (_value != nullptr); }
+	};
+}
+
+#endif // CRESOURCE_HPP
