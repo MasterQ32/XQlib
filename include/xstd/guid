@@ -4,13 +4,12 @@
 #include <array>
 #include <string>
 
+#include <uuid.h>
+
 namespace xstd
 {
-	using guid = std::array<std::byte, 16>;
-
-	std::string to_string(guid const & guid);
-
-	guid parse_guid(std::string const & text);
+	using namespace uuids;
+	using guid = uuid;
 }
 
 #endif // XQLIB_GUID_HPP

@@ -6,6 +6,10 @@ WARNINGS= \
 	-Wno-exit-time-destructors \
 	-Wno-global-constructors
 
+CONFIG(debug, debug|release) {
+	DEFINES += DEBUG
+}
+
 # Setup all warnings
 QMAKE_CFLAGS   += $$WARNINGS
 QMAKE_CXXFLAGS += $$WARNINGS
@@ -27,6 +31,7 @@ include($$PWD/pri/enet.pri)
 include($$PWD/pri/imgui.pri)
 include($$PWD/pri/optional.pri)
 include($$PWD/pri/json.pri)
+include($$PWD/pri/stduuid.pri)
 
 DEFINES += XGL_ENABLE_GLM
 

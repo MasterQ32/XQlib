@@ -1,6 +1,8 @@
 #ifndef XQLIB_RESOURCE_HPP
 #define XQLIB_RESOURCE_HPP
 
+#include <utility>
+
 namespace xstd
 {
 	//! A simple wrapper for C resources.
@@ -27,9 +29,9 @@ namespace xstd
 		}
 
 	public:
-		void reset()
+		void reset(T * new_content)
 		{
-			*this = resource();
+			*this = resource(new_content);
 		}
 
 		T * release()
@@ -50,6 +52,13 @@ namespace xstd
 		T const * operator->() const { return _value; }
 
 		operator bool() const { return (_value != nullptr); }
+
+		resource & operator = (resource && other)
+		{
+			this->~resource();
+			new (this) resource(std::move(other));
+			return *this;
+		}
 	};
 }
 
