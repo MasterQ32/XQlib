@@ -8,12 +8,12 @@
 
 namespace
 {
-	std::optional<xgl::texture2D> load(std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> && mem, int _w, int _h)
+	xstd::optional<xgl::texture2D> load(std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> && mem, int _w, int _h)
 	{
 		if(not mem)
 		{
 			xlog::log("texture_loader", xlog::error) << "could not load texture.";
-			return std::nullopt;
+			return xstd::nullopt;
 		}
 
 		unsigned int w = gsl::narrow<unsigned int>(_w);
@@ -34,7 +34,7 @@ namespace
 	}
 }
 
-std::optional<xgl::texture2D> xgraphics::load_texture(std::string const & file)
+xstd::optional<xgl::texture2D> xgraphics::load_texture(std::string const & file)
 {
 	int _w, _h;
 	std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> mem {
@@ -44,7 +44,7 @@ std::optional<xgl::texture2D> xgraphics::load_texture(std::string const & file)
 	return load(std::move(mem), _w, _h);
 }
 
-std::optional<xgl::texture2D> xgraphics::load_texture(std::byte const * buffer, std::size_t length)
+xstd::optional<xgl::texture2D> xgraphics::load_texture(std::byte const * buffer, std::size_t length)
 {
 	int _w, _h;
 	std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> mem {

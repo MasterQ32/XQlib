@@ -2,14 +2,14 @@
 #define XQLIB_TEXTURE_LOADER_HPP
 
 #include "../xgl/texture"
+#include "../xstd/optional"
 #include <string>
-#include <optional>
 
 namespace xgraphics
 {
-	std::optional<xgl::texture2D> load_texture(std::string const & file);
+	xstd::optional<xgl::texture2D> load_texture(std::string const & file);
 
-	std::optional<xgl::texture2D> load_texture(std::byte const * buffer, std::size_t length);
+	xstd::optional<xgl::texture2D> load_texture(std::byte const * buffer, std::size_t length);
 }
 
 #endif // TEXTURE_LOADER_HPP

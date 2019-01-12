@@ -29,6 +29,13 @@ namespace xgl
 			if(id != 0)
 				glDeleteTextures(1, &id);
 		}
+
+		texture & operator = (texture && other)
+		{
+			this->~texture();
+			new (this) texture (std::move(other));
+			return *this;
+		}
 	public:
 		void bind(GLuint unit) const {
 			glBindTextureUnit(unit, id);
@@ -87,7 +94,7 @@ namespace xgl
 		T getLevelParameter(GLenum key, int level) const
 		{
 			T value;
-			if constexpr(std::is_integral_v<T>())
+			if constexpr(std::is_integral_v<T>)
 				glGetTextureLevelParameteriv(id, level, key, &value);
 			else if constexpr(std::is_same_v<T, float>)
 			  glGetTextureLevelParameterfv(id, level, key, &value);

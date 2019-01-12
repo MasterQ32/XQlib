@@ -20,6 +20,7 @@ CONFIG -= c++11
 CONFIG += c++17
 QMAKE_CXXFLAGS += -std=c++17
 QMAKE_LFLAGS += -std=c++17
+LIBS += -lstdc++fs
 
 #include external modules
 include($$PWD/pri/sdl2.pri)
@@ -32,6 +33,9 @@ include($$PWD/pri/imgui.pri)
 include($$PWD/pri/optional.pri)
 include($$PWD/pri/json.pri)
 include($$PWD/pri/stduuid.pri)
+include($$PWD/pri/sqlite3.pri)
+include($$PWD/pri/openssl.pri)
+include($$PWD/pri/lzma.pri)
 
 DEFINES += XGL_ENABLE_GLM
 
@@ -83,7 +87,11 @@ HEADERS += \
     $$PWD/include/xm/3d/aabb \
     $$PWD/include/xstd/resource \
     $$PWD/include/xstd/guid \
-    $$PWD/include/xnet/http/utility
+    $$PWD/include/xnet/http/utility \
+    $$PWD/include/xdb/sqlite3 \
+    $$PWD/include/xio/compression/lzma \
+    $$PWD/include/xio/memory_stream \
+    $$PWD/include/xio/file_stream
 
 !contains(CONFIG,xqlib_extern):{
 	message("include xqlib source")
@@ -104,3 +112,7 @@ HEADERS += \
     $$PWD/src/xm3d.cpp \
     $$PWD/src/guid.cpp
 }
+
+SOURCES += \
+    $$PWD/src/sqlite3.cpp \
+    $$PWD/src/lzma.cpp

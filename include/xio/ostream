@@ -22,7 +22,7 @@ namespace xio
 		void write(void const * data, size_t length);
 
 		template<typename T>
-		std::enable_if_t<std::is_trivial_v<T>> write(T const & value)
+		std::enable_if_t<std::is_pod_v<T>> write(T const & value)
 		{
 			write(&value, sizeof value);
 		}

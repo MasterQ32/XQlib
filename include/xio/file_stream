@@ -1,0 +1,27 @@
+#ifndef XQLIB_FILE_STREAM_HPP
+#define XQLIB_FILE_STREAM_HPP
+
+#include "iostream"
+#include "../xstd/resource"
+#include <cstdio>
+
+namespace xio
+{
+	struct file_stream : iostream
+	{
+		xstd::resource<FILE, fclose> handle;
+
+		explicit file_stream(char const * fileName, char const * mode);
+		file_stream(file_stream const &) = delete;
+		file_stream(file_stream &&) = default;
+
+		virtual ssize_t read_raw(void * data, size_t length) noexcept override;
+		virtual ssize_t write_raw(void const * data, size_t length) noexcept override;
+
+		size_t tell() const;
+
+		void seek(ssize_t offset, int mode = SEEK_SET);
+	};
+}
+
+#endif // FILE_STREAM_HPP

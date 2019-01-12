@@ -1,0 +1,26 @@
+#ifndef XQLIB_MEMORY_STREAM_HPP
+#define XQLIB_MEMORY_STREAM_HPP
+
+#include "iostream"
+
+#include <cstddef>
+#include <vector>
+
+namespace xio
+{
+	struct memory_stream :
+		iostream
+	{
+		std::vector<std::byte> buffer;
+		size_t cursor;
+
+		memory_stream();
+		explicit memory_stream(size_t initial_size);
+		explicit memory_stream(void * const initial_data, size_t size);
+
+		virtual ssize_t read_raw(void * data, size_t length) noexcept override;
+		virtual ssize_t write_raw(void const * data, size_t length) noexcept override;
+	};
+}
+
+#endif // MEMORY_STREAM_HPP

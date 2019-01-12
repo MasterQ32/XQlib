@@ -9,7 +9,7 @@ namespace xstd
 	//! Requires a static deleter function.
 	//! @tparam T The type of the resource.
 	//! @tparam Deleter The deleter function that will release this resource.
-	template<typename T, void (*Deleter)(T * value)>
+	template<typename T, auto (*Deleter)(T * value)>
 	struct resource
 	{
 	private:
@@ -29,7 +29,7 @@ namespace xstd
 		}
 
 	public:
-		void reset(T * new_content)
+		void reset(T * new_content = nullptr)
 		{
 			*this = resource(new_content);
 		}

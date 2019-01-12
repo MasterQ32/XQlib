@@ -1,0 +1,118 @@
+#ifndef XQLIB_SQLITE3_HPP
+#define XQLIB_SQLITE3_HPP
+
+#include "../xstd/resource"
+#include <sqlite3.h>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <cassert>
+#include <gsl/gsl>
+
+namespace xdb::sqlite3
+{
+	struct dbnull_t { };
+
+	constexpr dbnull_t null = dbnull_t{};
+
+	struct statement
+	{
+		struct column
+		{
+			::sqlite3_stmt const * const stmt;
+			size_t const index;
+			char const * const name;
+			explicit column(::sqlite3_stmt const *, size_t);
+
+			int type() const;
+			size_t size() const;
+
+			int32_t                as_int32() const;
+			int64_t                as_int64() const;
+			double                 as_double() const;
+			std::string            as_text() const;
+			std::vector<std::byte> as_blob() const;
+
+			template<size_t N>
+			std::array<std::byte, N> as_blob() const
+			{
+				std::array<std::byte, N> result;
+				assert(size() == N);
+				memcpy(result.data(), sqlite3_column_blob(const_cast<sqlite3_stmt*>(stmt), gsl::narrow<int>(index)), N);
+				return result;
+			}
+		};
+
+		xstd::resource<::sqlite3_stmt, sqlite3_finalize> ptr;
+		std::unordered_map<std::string, size_t> columns;
+
+		explicit statement(::sqlite3_stmt * stmt);
+
+		//! Executes the statement for a single row.
+		//! @returns true if there is row data.
+		bool step();
+
+		//! Resets the query to be re-executed
+		void reset();
+
+		//! Checks if the statement was at least once stepped.
+		bool is_busy() const;
+
+		column const get_column(size_t index) const;
+
+		column const get_column(std::string const & name) const;
+
+		column const operator[](size_t index) const {
+			return get_column(index);
+		}
+
+		column const operator[](std::string const & name) const {
+			return get_column(name);
+		}
+
+		size_t column_count() const;
+
+		size_t param_count() const;
+
+		char const * param_name(size_t index) const;
+
+		size_t param_index(std::string const & param) const;
+
+		statement & bind(size_t param, int32_t value);
+		statement & bind(size_t param, int64_t value);
+		statement & bind(size_t param, double value);
+		statement & bind(size_t param, std::string const & value);
+		statement & bind(size_t param, dbnull_t);
+		statement & bind(size_t param, void const * data, size_t length);
+
+		statement & bind(std::string const & param, int32_t value);
+		statement & bind(std::string const & param, int64_t value);
+		statement & bind(std::string const & param, double value);
+		statement & bind(std::string const & param, std::string const & value);
+		statement & bind(std::string const & param, dbnull_t);
+		statement & bind(std::string const & param, void const * data, size_t length);
+
+
+		template<typename F>
+		auto slurp_to_vector(F const & f)
+		{
+			std::vector<decltype(f(*this))> result;
+			while(step()) {
+				result.emplace_back(f(*this));
+			}
+			reset();
+			return result;
+		}
+	};
+
+	struct db
+	{
+		xstd::resource<::sqlite3, sqlite3_close_v2> ptr;
+
+		explicit db(char const * fileName);
+
+		statement prepare(std::string const & sql);
+	};
+}
+
+#endif // SQLITE3_HPP

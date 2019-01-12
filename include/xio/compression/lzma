@@ -1,0 +1,13 @@
+#ifndef XQLIB_LZMA_HPP
+#define XQLIB_LZMA_HPP
+
+#include "../istream"
+#include "../ostream"
+
+namespace xio::compression::lzma
+{
+	size_t compress(istream & in, ostream & out, uint32_t preset = 6);
+	size_t decompress(istream & in, ostream & out);
+}
+
+#endif // LZMA_HPP
