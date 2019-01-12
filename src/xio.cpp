@@ -3,6 +3,7 @@
 #include "../include/xio/iostream"
 #include "../include/xio/memory_stream"
 #include "../include/xio/file_stream"
+#include "../include/xio/utility"
 #include "../include/xcept"
 
 #include <sstream>
@@ -24,9 +25,7 @@ void xio::ostream::write(void const * data, size_t length)
 	while(offset < length)
 	{
 		auto const count = write_raw(reinterpret_cast<std::byte const *>(data) + offset, length - offset);
-		if(count < 0)
-			throw xcept::io_error("failed to send data.");
-		else if(count == 0)
+		if(count == 0)
 			throw xcept::end_of_stream("reached end of stream before all data could be written!");
 		else
 			offset += gsl::narrow_cast<size_t>(count);
@@ -51,9 +50,7 @@ void xio::istream::read(void * data, size_t length)
 	while(offset < length)
 	{
 		auto const count = read_raw(reinterpret_cast<std::byte *>(data) + offset, length - offset);
-		if(count < 0)
-			throw xcept::io_error("failed to send data.");
-		else if(count == 0)
+		if(count == 0)
 			throw xcept::end_of_stream("reached end of stream before all data could be written!");
 		else
 			offset += gsl::narrow_cast<size_t>(count);
@@ -89,9 +86,7 @@ std::vector<std::byte> xio::istream::read_to_end()
 		result.resize(start + block_size);
 
 		auto const count = read_raw(&result[start], block_size);
-		if(count < 0)
-			throw xcept::io_error("failed to read data.");
-		else if(count == 0)
+		if(count == 0)
 			break;
 		else
 			result.resize(start + gsl::narrow_cast<size_t>(count));
@@ -128,21 +123,21 @@ xio::memory_stream::memory_stream(void * const initial_data, size_t size) :
 	memcpy(buffer.data(), initial_data, size);
 }
 
-ssize_t xio::memory_stream::read_raw(void * data, size_t length) noexcept
+size_t xio::memory_stream::read_raw(void * data, size_t length) noexcept
 {
 	size_t const top = std::min(cursor + length, buffer.size());
 	size_t const actual_length = top - cursor;
 	memcpy(data, buffer.data() + cursor, actual_length);
 	cursor += actual_length;
-	return gsl::narrow<ssize_t>(actual_length);
+	return actual_length;
 }
 
-ssize_t xio::memory_stream::write_raw(void const * data, size_t length) noexcept
+size_t xio::memory_stream::write_raw(void const * data, size_t length) noexcept
 {
 	buffer.resize(std::max(buffer.size(), cursor + length));
 	memcpy(buffer.data() + cursor, data, length);
 	cursor += length;
-	return gsl::narrow<ssize_t>(length);
+	return length;
 }
 
 xio::file_stream::file_stream(char const * fileName, char const * mode) :
@@ -152,14 +147,14 @@ xio::file_stream::file_stream(char const * fileName, char const * mode) :
 		throw xcept::io_error("Could not open file!");
 }
 
-ssize_t xio::file_stream::read_raw(void * data, size_t length) noexcept
+size_t xio::file_stream::read_raw(void * data, size_t length) noexcept
 {
-	return gsl::narrow<ssize_t>(fread(data, 1, length, handle.get()));
+	return fread(data, 1, length, handle.get());
 }
 
-ssize_t xio::file_stream::write_raw(void const * data, size_t length) noexcept
+size_t xio::file_stream::write_raw(void const * data, size_t length) noexcept
 {
-	return gsl::narrow<ssize_t>(fwrite(data, 1, length, handle.get()));
+	return fwrite(data, 1, length, handle.get());
 }
 
 size_t xio::file_stream::tell() const
@@ -171,4 +166,32 @@ void xio::file_stream::seek(ssize_t offset, int mode)
 {
 	if(fseek(handle.get(), offset, mode) != 0)
 		throw xcept::io_error("failed to seek.");
+}
+
+size_t static const constexpr copy_block_size = 1 << 18;
+
+void xio::copy(istream & source, ostream & target)
+{
+	std::array<std::byte, copy_block_size> buffer;
+	while(true)
+	{
+		auto const count = source.read_raw(buffer.data(), buffer.size());
+		if(count == 0)
+			return;
+		target.write(buffer.data(), count);
+	}
+}
+
+void xio::copy(istream & source, ostream & target, size_t num_bytes)
+{
+	std::array<std::byte, copy_block_size> buffer;
+	while(num_bytes > 0)
+	{
+		auto const remaining = std::min(num_bytes, buffer.size());
+		auto const count = source.read_raw(buffer.data(), remaining);
+		if(count == 0)
+			return;
+		target.write(buffer.data(), count);
+		num_bytes -= count;
+	}
 }

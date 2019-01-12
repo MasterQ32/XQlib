@@ -16,7 +16,7 @@ namespace xnet
 		socket_istream(socket_istream &&) = default;
 		~socket_istream() override;
 
-		ssize_t read_raw(void * data, size_t length) noexcept override;
+		size_t read_raw(void * data, size_t length) override;
 	};
 
 	//! A stream that allows writing data to a socket.
@@ -29,7 +29,7 @@ namespace xnet
 		socket_ostream(socket_ostream &&) = default;
 		~socket_ostream() override;
 
-		ssize_t write_raw(void const * data, size_t length) noexcept override;
+		size_t write_raw(void const * data, size_t length) override;
 	};
 
 	//! A stream that allows reading and writing data with a socket.

@@ -350,14 +350,20 @@ xnet::socket_stream::~socket_stream()
 
 }
 
-ssize_t xnet::socket_ostream::write_raw(void const * data, size_t length) noexcept
+size_t xnet::socket_ostream::write_raw(void const * data, size_t length)
 {
-	return sock.write(data, length, 0);
+	auto const count = sock.write(data, length, 0);
+	if(count < 0)
+		throw xcept::io_error("failed to send data.");
+	return gsl::narrow<size_t>(count);
 }
 
-ssize_t xnet::socket_istream::read_raw(void * data, size_t length) noexcept
+size_t xnet::socket_istream::read_raw(void * data, size_t length)
 {
-	return sock.read(data, length, 0);
+	auto const count = sock.read(data, length, 0);
+	if(count < 0)
+		throw xcept::io_error("failed to send data.");
+	return gsl::narrow<size_t>(count);
 }
 
 

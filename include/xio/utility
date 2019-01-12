@@ -1,0 +1,14 @@
+#ifndef XQLITE_XIO_UTILITY_HPP
+#define XQLITE_XIO_UTILITY_HPP
+
+#include "istream"
+#include "ostream"
+
+namespace xio
+{
+	void copy(istream & source, ostream & target);
+
+	void copy(istream & source, ostream & target, size_t num_bytes);
+}
+
+#endif // UTILITY_HPP

@@ -15,8 +15,8 @@ namespace xio
 		file_stream(file_stream const &) = delete;
 		file_stream(file_stream &&) = default;
 
-		virtual ssize_t read_raw(void * data, size_t length) noexcept override;
-		virtual ssize_t write_raw(void const * data, size_t length) noexcept override;
+		virtual size_t read_raw(void * data, size_t length) noexcept override;
+		virtual size_t write_raw(void const * data, size_t length) noexcept override;
 
 		size_t tell() const;
 

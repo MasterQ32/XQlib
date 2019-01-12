@@ -91,7 +91,8 @@ HEADERS += \
     $$PWD/include/xdb/sqlite3 \
     $$PWD/include/xio/compression/lzma \
     $$PWD/include/xio/memory_stream \
-    $$PWD/include/xio/file_stream
+    $$PWD/include/xio/file_stream \
+    $$PWD/include/xio/utility
 
 !contains(CONFIG,xqlib_extern):{
 	message("include xqlib source")
