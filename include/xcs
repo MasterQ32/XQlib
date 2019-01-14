@@ -39,7 +39,17 @@ namespace xcs
 
 		explicit entity(struct universe & _universe, unique_id _id) : universe(_universe), id(_id) { }
 		entity(entity const &) = default;
-		entity(entity &&) = default;
+		entity(entity && other) :
+		  universe(other.universe),
+		  id(std::move(const_cast<unique_id &>(other.id)))
+		{
+
+		}
+
+		operator bool() const
+		{
+			return not id.is_null();
+		}
 
 		entity & operator= (entity const & other)
 		{
@@ -245,6 +255,7 @@ namespace xcs
 
 	#define XCS_REGISTER_COMPONENT(_Type) \
 		static_assert(std::is_default_constructible_v<_Type>, #_Type " must be default constructible!"); \
+		static_assert(std::is_move_constructible_v<_Type>, #_Type " must be move constructible!"); \
 		template<> inline bool ::xcs::is_component<_Type>() noexcept { return true; } \
 		inline ::xcs::meta_component<_Type> __##_Type##component { #_Type }; \
 		template<> inline ::xcs::meta_component<_Type> const & ::xcs::get_meta_component<_Type>() noexcept { \

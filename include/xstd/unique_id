@@ -17,7 +17,11 @@ namespace xstd
 		constexpr unique_id() noexcept : value(0) { }
 		explicit constexpr unique_id(unsigned long _value) noexcept : value(_value) { }
 		constexpr unique_id(unique_id const & other) noexcept = default;
-		constexpr unique_id(unique_id && other) noexcept = default;
+		constexpr unique_id(unique_id && other) noexcept :
+		  value(other.value)
+		{
+			const_cast<unsigned long &>(other.value) = 0;
+		}
 		~unique_id() noexcept = default;
 
 		//! returns true if the unique_id is a null-id.

@@ -11,16 +11,16 @@ namespace xio
 	//! generic input stream
 	struct istream
 	{
-		istream();
+		istream() noexcept;
 		istream(istream const &) = delete;
-		virtual ~istream();
+		virtual ~istream() noexcept;
 
 		virtual size_t read_raw(void * data, size_t length) = 0;
 
 		void read(void * data, size_t length);
 
 		template<typename T>
-		std::enable_if_t<std::is_trivial_v<T>, T> read()
+		std::enable_if_t<std::is_pod_v<T>, T> read()
 		{
 			T value;
 			read(&value, sizeof value);
@@ -28,7 +28,7 @@ namespace xio
 		}
 
 		template<typename T, size_t N>
-		std::array<T, N> read()
+		std::array<T, N> read_range()
 		{
 			std::array<T, N> array;
 			for(size_t i = 0; i < N; i++)
@@ -37,7 +37,7 @@ namespace xio
 		}
 
 		template<typename T>
-		std::vector<T> read(size_t count)
+		std::vector<T> read_range(size_t count)
 		{
 			std::vector<T> array(count);
 			for(size_t i = 0; i < array.size(); i++)

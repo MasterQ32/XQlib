@@ -53,8 +53,16 @@ namespace xgl
 			glTextureStorage2D(id, gsl::narrow<GLsizei>(levels), internalFormat, gsl::narrow<GLsizei>(width), gsl::narrow<GLsizei>(height));
 		}
 
+		void storage2DMultisample(size_t samples, GLenum internalformat, size_t width, size_t height, bool fixedsamplelocations) {
+			glTextureStorage2DMultisample(id, gsl::narrow<GLsizei>(samples), internalformat, gsl::narrow<GLsizei>(width), gsl::narrow<GLsizei>(height), fixedsamplelocations ? GL_TRUE : GL_FALSE);
+		}
+
 		void storage3D(size_t levels, GLenum internalFormat, size_t width, size_t height, size_t depth) {
 			glTextureStorage3D(id, gsl::narrow<GLsizei>(levels), internalFormat, gsl::narrow<GLsizei>(width), gsl::narrow<GLsizei>(height), gsl::narrow<GLsizei>(depth));
+		}
+
+		void storage3DMultisample(size_t samples, GLenum internalformat, size_t width, size_t height, size_t depth, bool fixedsamplelocations) {
+			glTextureStorage3DMultisample(id, gsl::narrow<GLsizei>(samples), gsl::narrow<GLsizei>(internalformat), gsl::narrow<GLsizei>(width), gsl::narrow<GLsizei>(height), gsl::narrow<GLsizei>(depth), fixedsamplelocations ? GL_TRUE : GL_FALSE);
 		}
 
 		void subImage1D(size_t level, GLint xoffset, size_t width, GLenum format, GLenum type, const void *pixels) {
@@ -151,13 +159,15 @@ namespace xgl
 		template<class T> struct dependent_false : std::false_type {};
 	};
 
-	using texture1D        = texture<GL_TEXTURE_1D>;
-	using texture2D        = texture<GL_TEXTURE_2D>;
-	using texture3D        = texture<GL_TEXTURE_3D>;
-	using texture1DArray   = texture<GL_TEXTURE_1D_ARRAY>;
-	using texture2DArray   = texture<GL_TEXTURE_2D_ARRAY>;
-	using textureCUBE      = texture<GL_TEXTURE_CUBE_MAP>;
-	using textureCUBEArray = texture<GL_TEXTURE_CUBE_MAP_ARRAY>;
+	using texture1D                   = texture<GL_TEXTURE_1D>;
+	using texture2D                   = texture<GL_TEXTURE_2D>;
+	using texture2DMultisample        = texture<GL_TEXTURE_2D_MULTISAMPLE>;
+	using texture3D                   = texture<GL_TEXTURE_3D>;
+	using texture1DArray              = texture<GL_TEXTURE_1D_ARRAY>;
+	using texture2DArray              = texture<GL_TEXTURE_2D_ARRAY>;
+	using texture2DMultisampleArray   = texture<GL_TEXTURE_2D_MULTISAMPLE_ARRAY>;
+	using textureCUBE                 = texture<GL_TEXTURE_CUBE_MAP>;
+	using textureCUBEArray             = texture<GL_TEXTURE_CUBE_MAP_ARRAY>;
 }
 
 #endif

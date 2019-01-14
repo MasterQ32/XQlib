@@ -6,7 +6,7 @@
 
 namespace xio
 {
-	void copy(istream & source, ostream & target);
+	size_t copy(istream & source, ostream & target);
 
 	void copy(istream & source, ostream & target, size_t num_bytes);
 }

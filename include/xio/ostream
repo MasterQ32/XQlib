@@ -6,16 +6,17 @@
 #include <array>
 #include <cstring>
 #include <string>
+#include <vector>
 
 namespace xio
 {
 	//! basic stream for writing data.
 	struct ostream
 	{
-		ostream();
+		ostream() noexcept;
 		ostream(ostream const &) = delete;
 		ostream(ostream &&) = default;
-		virtual ~ostream();
+		virtual ~ostream() noexcept;
 
 		virtual size_t write_raw(void const * data, size_t length) = 0;
 
@@ -55,21 +56,34 @@ namespace xio
 		}
 
 		template<typename T, size_t N>
-		void write(T const (& array)[N])
+		void write_range(T const (& array)[N])
 		{
 			for(size_t i = 0; i < N; i++)
 				write(array[i]);
 		}
 
 		template<typename T, size_t N>
-		void write(std::array<T, N> const & array)
+		void write_range(std::array<T, N> const & array)
 		{
 			for(size_t i = 0; i < N; i++)
 				write(array[i]);
 		}
 
+		template<typename T>
+		void write_range(std::vector<T> const & array)
+		{
+			for(size_t i = 0; i < array.size(); i++)
+				write(array[i]);
+		}
+
+		template<typename T>
+		void write_range(T const * ptr, size_t n)
+		{
+			write(reinterpret_cast<void const *>(ptr), sizeof(T) * n);
+		}
+
 		template<typename Iterator>
-		void write(Iterator begin, Iterator end)
+		void write_range(Iterator begin, Iterator end)
 		{
 			for(auto it = begin; it != end; it++)
 				write(*it);

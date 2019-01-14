@@ -4,6 +4,7 @@
 #include <string>
 #include <glm/glm.hpp>
 #include <functional>
+#include <xstd/optional>
 
 //! *xapp* is an SDL2 abstraction layer that provides
 //! managed event and window handling.
@@ -64,6 +65,7 @@ namespace xapp
 		bool resizable;        ///< If set `true`, the application window will be resizable.
 		bool enable_imgui;     ///< If set `true`, dear imgui support for the main window will be enabled.
 		bool enable_vsync;     ///< If set `true`, the render chain will use vsync.
+		xstd::optional<unsigned int> num_samples; ///< If set to value, it defines the number of samples for multisampling
 
 		options(
 		    std::string const & title = "Untitled XApp",

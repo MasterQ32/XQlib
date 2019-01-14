@@ -55,6 +55,7 @@ xlog::log::~log()
 		}
 
 		stream << text.str() << std::endl;
+		stream.flush();
 
 		if(colored_output)
 		{

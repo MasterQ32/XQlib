@@ -2,6 +2,7 @@
 #define XQLIB_MEMORY_STREAM_HPP
 
 #include "iostream"
+#include "seekable_stream"
 
 #include <cstddef>
 #include <vector>
@@ -9,7 +10,8 @@
 namespace xio
 {
 	struct memory_stream :
-		iostream
+		iostream,
+		seekable_stream
 	{
 		std::vector<std::byte> buffer;
 		size_t cursor;
@@ -18,9 +20,19 @@ namespace xio
 		explicit memory_stream(size_t initial_size);
 		explicit memory_stream(void * const initial_data, size_t size);
 
+		memory_stream(memory_stream const &) = default;
+		memory_stream(memory_stream &&);
+
 		virtual size_t read_raw(void * data, size_t length) noexcept override;
 		virtual size_t write_raw(void const * data, size_t length) noexcept override;
+
+		void rewind() override;
+
+		size_t tell() const  override;
+
+		size_t seek(ssize_t offset, seek_type type = set) override;
 	};
+	static_assert(std::is_move_constructible_v<memory_stream>);
 }
 
 #endif // MEMORY_STREAM_HPP

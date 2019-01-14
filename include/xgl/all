@@ -6,6 +6,7 @@
 #include "vertexarray"
 #include "shader"
 #include "program"
+#include "program_pipeline"
 #include "framebuffer"
 
 #endif

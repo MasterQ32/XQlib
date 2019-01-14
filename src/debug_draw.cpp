@@ -28,7 +28,7 @@ namespace
 
 		void main()
 		{
-	        fColor = mix(color, uColor, uOverride);
+			fColor = mix(color, uColor, uOverride);
 		}
 	)glsl";
 }

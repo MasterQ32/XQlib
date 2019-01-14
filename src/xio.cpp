@@ -3,18 +3,24 @@
 #include "../include/xio/iostream"
 #include "../include/xio/memory_stream"
 #include "../include/xio/file_stream"
+#include "../include/xio/seekable_stream"
 #include "../include/xio/utility"
 #include "../include/xcept"
 
 #include <sstream>
 #include <gsl/gsl>
 
-xio::ostream::ostream()
+xio::seekable_stream::~seekable_stream() noexcept
 {
 
 }
 
-xio::ostream::~ostream()
+xio::ostream::ostream() noexcept
+{
+
+}
+
+xio::ostream::~ostream() noexcept
 {
 
 }
@@ -34,12 +40,12 @@ void xio::ostream::write(void const * data, size_t length)
 
 
 
-xio::istream::istream()
+xio::istream::istream() noexcept
 {
 
 }
 
-xio::istream::~istream()
+xio::istream::~istream() noexcept
 {
 
 }
@@ -51,7 +57,7 @@ void xio::istream::read(void * data, size_t length)
 	{
 		auto const count = read_raw(reinterpret_cast<std::byte *>(data) + offset, length - offset);
 		if(count == 0)
-			throw xcept::end_of_stream("reached end of stream before all data could be written!");
+			throw xcept::end_of_stream("reached end of stream before all data could be read!");
 		else
 			offset += gsl::narrow_cast<size_t>(count);
 	}
@@ -108,6 +114,12 @@ xio::memory_stream::memory_stream() :
 
 }
 
+xio::memory_stream::memory_stream(memory_stream && other) :
+  buffer(std::move(other.buffer)),
+  cursor(other.cursor)
+{
+}
+
 xio::memory_stream::memory_stream(size_t initial_size) :
   buffer(initial_size),
   cursor(0)
@@ -140,11 +152,49 @@ size_t xio::memory_stream::write_raw(void const * data, size_t length) noexcept
 	return length;
 }
 
+
+
+void xio::memory_stream::rewind()
+{
+	cursor = 0;
+}
+
+size_t xio::memory_stream::tell() const
+{
+	return cursor;
+}
+
+size_t xio::memory_stream::seek(ssize_t offset, seek_type type)
+{
+	ssize_t new_cursor = gsl::narrow<ssize_t>(cursor);
+	auto const length = gsl::narrow<ssize_t>(buffer.size());
+	switch(type)
+	{
+		case set:
+			new_cursor = offset;
+			break;
+		case cur:
+			new_cursor += offset;
+			break;
+		case end:
+			new_cursor = length + offset;
+			break;
+	}
+	cursor = gsl::narrow<size_t>(std::clamp<ssize_t>(new_cursor, 0, length));
+	return cursor;
+}
+
 xio::file_stream::file_stream(char const * fileName, char const * mode) :
   handle(fopen(fileName, mode))
 {
 	if(not handle)
 		throw xcept::io_error("Could not open file!");
+}
+
+xio::file_stream::file_stream(file_stream && other) :
+  handle(std::move(other.handle))
+{
+
 }
 
 size_t xio::file_stream::read_raw(void * data, size_t length) noexcept
@@ -157,28 +207,42 @@ size_t xio::file_stream::write_raw(void const * data, size_t length) noexcept
 	return fwrite(data, 1, length, handle.get());
 }
 
+void xio::file_stream::flush()
+{
+	fflush(handle.get());
+}
+
+void xio::file_stream::rewind()
+{
+	auto const pos = seek(0, set);
+	assert(pos == 0);
+}
+
 size_t xio::file_stream::tell() const
 {
 	return gsl::narrow<size_t>(ftell(const_cast<FILE*>(handle.get())));
 }
 
-void xio::file_stream::seek(ssize_t offset, int mode)
+size_t xio::file_stream::seek(ssize_t offset, seek_type type)
 {
-	if(fseek(handle.get(), offset, mode) != 0)
+	if(fseek(handle.get(), offset, static_cast<int>(type)) != 0)
 		throw xcept::io_error("failed to seek.");
+	return tell();
 }
 
 size_t static const constexpr copy_block_size = 1 << 18;
 
-void xio::copy(istream & source, ostream & target)
+size_t xio::copy(istream & source, ostream & target)
 {
 	std::array<std::byte, copy_block_size> buffer;
+	size_t total = 0;
 	while(true)
 	{
 		auto const count = source.read_raw(buffer.data(), buffer.size());
 		if(count == 0)
-			return;
+			return total;
 		target.write(buffer.data(), count);
+		total += count;
 	}
 }
 
@@ -190,7 +254,7 @@ void xio::copy(istream & source, ostream & target, size_t num_bytes)
 		auto const remaining = std::min(num_bytes, buffer.size());
 		auto const count = source.read_raw(buffer.data(), remaining);
 		if(count == 0)
-			return;
+			throw xcept::io_error("failed to copy total number of bytes.");
 		target.write(buffer.data(), count);
 		num_bytes -= count;
 	}

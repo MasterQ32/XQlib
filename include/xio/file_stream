@@ -2,26 +2,33 @@
 #define XQLIB_FILE_STREAM_HPP
 
 #include "iostream"
+#include "seekable_stream"
 #include "../xstd/resource"
 #include <cstdio>
 
 namespace xio
 {
-	struct file_stream : iostream
+	struct file_stream : iostream, seekable_stream
 	{
 		xstd::resource<FILE, fclose> handle;
 
 		explicit file_stream(char const * fileName, char const * mode);
 		file_stream(file_stream const &) = delete;
-		file_stream(file_stream &&) = default;
+		file_stream(file_stream && other);
 
 		virtual size_t read_raw(void * data, size_t length) noexcept override;
 		virtual size_t write_raw(void const * data, size_t length) noexcept override;
 
-		size_t tell() const;
+		void rewind() override;
 
-		void seek(ssize_t offset, int mode = SEEK_SET);
+		size_t tell() const override;
+
+		size_t seek(ssize_t offset, seek_type type) override;
+
+		void flush();
 	};
+	static_assert(not std::is_copy_constructible_v<file_stream>);
+	static_assert(std::is_move_constructible_v<file_stream>);
 }
 
 #endif // FILE_STREAM_HPP

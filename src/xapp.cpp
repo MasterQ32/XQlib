@@ -103,7 +103,8 @@ xapp::options::options(std::string const & _title, glm::ivec2 _resolution, bool 
   fullscreen(_fullscreen),
   resizable(_resizable),
   enable_imgui(true),
-  enable_vsync(true)
+  enable_vsync(true),
+  num_samples()
 {
 
 }
@@ -139,6 +140,12 @@ bool xapp::init(xapp::mode mode, options const & opt)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | SDL_GL_CONTEXT_DEBUG_FLAG);
+
+		if(opt.num_samples)
+		{
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, *opt.num_samples);
+		}
 	}
 
 	Uint32 flags = SDL_WINDOW_SHOWN;
@@ -195,6 +202,12 @@ bool xapp::init(xapp::mode mode, options const & opt)
 			xlog::log("xapp", xlog::message) << "OpenGL Version: " << glGetString(GL_VERSION);
 			xlog::log("xapp", xlog::message) << "OpenGL Vendor:  " << glGetString(GL_VENDOR);
 			xlog::log("xapp", xlog::message) << "GLSL Version:   " << glGetString(GL_SHADING_LANGUAGE_VERSION);
+
+			if(opt.num_samples)
+			{
+				glEnable(GL_MULTISAMPLE);
+			}
+
 			break;
 		}
 		case xapp::sdl:

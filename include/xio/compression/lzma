@@ -6,7 +6,10 @@
 
 namespace xio::compression::lzma
 {
+	//! Compresses a lzma data stream and returns the number of compressed bytes.
 	size_t compress(istream & in, ostream & out, uint32_t preset = 6);
+
+	//! Decompresses a lzma data stream and returns the number of decompressed bytes.
 	size_t decompress(istream & in, ostream & out);
 }
 

@@ -4,6 +4,7 @@
 #include <GL/gl3w.h>
 #include <utility>
 #include <vector>
+#include <gsl/gsl>
 
 namespace xgl
 {
@@ -28,12 +29,27 @@ namespace xgl
 				glDeleteBuffers(1, &id);
 		}
 	public:
-		void storage(GLsizei size, GLbitfield flags) {
-			glNamedBufferStorage(id, size, nullptr, flags);
+		void storage(size_t size, GLbitfield flags = 0) {
+			glNamedBufferStorage(id, gsl::narrow<GLsizei>(size), nullptr, flags);
 		}
 
-		void storage(GLsizei size, const void *data, GLbitfield flags) {
-			glNamedBufferStorage(id, size, data, flags);
+		void storage(size_t size, const void *data, GLbitfield flags = 0) {
+			glNamedBufferStorage(id, gsl::narrow<GLsizei>(size), data, flags);
+		}
+
+		template<typename T>
+		void storage(std::vector<T> const & src, GLbitfield flags = 0) {
+			storage(sizeof(T) * src.size(), src.data(), flags);
+		}
+
+		template<typename T, size_t N>
+		void storage(std::array<T, N> const & src, GLbitfield flags = 0) {
+			storage(sizeof(T) * src.size(), src.data(), flags);
+		}
+
+		template<typename T, size_t N>
+		void storage(T const (&src)[N], GLbitfield flags = 0) {
+			storage(sizeof(T) * N, src, flags);
 		}
 
 		void data(GLsizei size, const void *data, GLenum usage = GL_STATIC_DRAW) {

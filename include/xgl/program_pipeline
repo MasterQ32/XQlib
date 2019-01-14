@@ -1,0 +1,61 @@
+#ifndef XQLIB_GL_PROGRAM_PIPELINE_HPP
+#define XQLIB_GL_PROGRAM_PIPELINE_HPP
+
+
+#include <GL/gl3w.h>
+#include <utility>
+#include <vector>
+
+#include "program"
+
+namespace xgl
+{
+	struct program_pipeline
+	{
+		GLuint id;
+
+	public:
+		program_pipeline() {
+			glCreateProgramPipelines(1, &id);
+		}
+
+		program_pipeline(program_pipeline const &) = delete;
+
+		program_pipeline(program_pipeline && other) : id(other.id) {
+			other.id = 0;
+		}
+
+		~program_pipeline()
+		{
+			if(id != 0)
+				glDeleteProgramPipelines(1, &id);
+		}
+	public:
+		void useProgramStages(GLbitfield stages, xgl::program const & program)
+		{
+			glUseProgramStages(id, stages, program);
+		}
+
+		void useProgramStages(GLbitfield stages, GLuint program)
+		{
+			glUseProgramStages(id, stages, program);
+		}
+
+		void bind()
+		{
+			glUseProgram(0);
+			glBindProgramPipeline(id);
+		}
+
+	public:
+		operator GLuint () const {
+			return id;
+		}
+
+		operator bool() const {
+			return (id != 0);
+		}
+	};
+}
+
+#endif // PROGRAM_PIPELINE_HPP
