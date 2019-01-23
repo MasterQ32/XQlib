@@ -25,3 +25,6 @@
 [submodule "extern/nativefiledialog"]
 	path = extern/nativefiledialog
 	url = https://github.com/mlabbe/nativefiledialog
+[submodule "extern/zstd"]
+	path = extern/zstd
+	url = https://github.com/facebook/zstd

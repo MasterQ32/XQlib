@@ -254,8 +254,8 @@ namespace xcs
 	}
 
 	#define XCS_REGISTER_COMPONENT(_Type) \
-		static_assert(std::is_default_constructible_v<_Type>, #_Type " must be default constructible!"); \
-		static_assert(std::is_move_constructible_v<_Type>, #_Type " must be move constructible!"); \
+		static_assert(::std::is_default_constructible_v<_Type>, #_Type " must be default constructible!"); \
+		static_assert(::std::is_move_constructible_v<_Type>, #_Type " must be move constructible!"); \
 		template<> inline bool ::xcs::is_component<_Type>() noexcept { return true; } \
 		inline ::xcs::meta_component<_Type> __##_Type##component { #_Type }; \
 		template<> inline ::xcs::meta_component<_Type> const & ::xcs::get_meta_component<_Type>() noexcept { \

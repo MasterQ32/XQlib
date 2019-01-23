@@ -1,0 +1,18 @@
+#ifndef XQLIB_COMPRESSION_ZSTD_HPP
+#define XQLIB_COMPRESSION_ZSTD_HPP
+
+#include "../istream"
+#include "../ostream"
+
+namespace xio::compression::zstd
+{
+	int get_max_compression_level();
+
+	//! Compresses a lzma data stream and returns the number of compressed bytes.
+	size_t compress(istream & in, ostream & out, int compressionLevel = get_max_compression_level() / 2);
+
+	//! Decompresses a lzma data stream and returns the number of decompressed bytes.
+	size_t decompress(istream & in, ostream & out);
+}
+
+#endif // ZSTD_HPP

@@ -1,0 +1,57 @@
+#ifndef XQLIB_PERF_COUNTER_HPP
+#define XQLIB_PERF_COUNTER_HPP
+
+#include <chrono>
+#include <xlog>
+#include <string>
+
+namespace xutility
+{
+	struct perf_counter
+	{
+		using clock = std::chrono::high_resolution_clock;
+
+		clock::time_point start, snap;
+		std::string category;
+
+		perf_counter(std::string _category) :
+		  start(clock::now()),
+		  snap(start),
+		  category(std::move(_category))
+		{
+
+		}
+
+		perf_counter(perf_counter const &) = delete;
+		perf_counter(perf_counter && other) :
+		  start(other.start),
+		  category(other.category)
+		{
+			other.start = clock::time_point { };
+		}
+
+		~perf_counter()
+		{
+			if(start == clock::time_point { })
+				return;
+
+			auto const end = clock::now();
+			xlog::log(category.c_str(), xlog::message)
+			    << "total time = "
+			    << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1000000.0
+					<< " ms";
+		}
+
+		void snaphot(char const * msg)
+		{
+			auto const now = clock::now();
+			xlog::log(category.c_str(), xlog::message)
+			    << "snaphot(" << msg << ") = "
+			    << std::chrono::duration_cast<std::chrono::nanoseconds>(now - snap).count() / 1000000.0
+					<< " ms";
+			snap = now;
+		}
+	};
+}
+
+#endif // PERF_COUNTER_HPP

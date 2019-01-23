@@ -97,6 +97,14 @@ SDL_Window * xapp::window = nullptr;
 SDL_Renderer * xapp::renderer = nullptr;
 SDL_GLContext xapp::glcontext = nullptr;
 
+namespace xapp
+{
+	void install_error_handler()
+	{
+		glDebugMessageCallback(dbg_message, nullptr);
+	}
+}
+
 xapp::options::options(std::string const & _title, glm::ivec2 _resolution, bool _fullscreen, bool _resizable) :
   title(_title),
   resolution(_resolution),
@@ -144,7 +152,7 @@ bool xapp::init(xapp::mode mode, options const & opt)
 		if(opt.num_samples)
 		{
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, *opt.num_samples);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, gsl::narrow<int>(*opt.num_samples));
 		}
 	}
 
@@ -173,6 +181,8 @@ bool xapp::init(xapp::mode mode, options const & opt)
 			abort();
 		case xapp::opengl:
 		{
+			// xapp does not share it's context
+			SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
 			xapp::glcontext = SDL_GL_CreateContext(window);
 			if(xapp::glcontext == nullptr)
 			{

@@ -22,15 +22,38 @@ namespace xio
 
 		memory_stream(memory_stream const &) = default;
 		memory_stream(memory_stream &&);
+	public:
+		void *       data()       { return buffer.data(); }
+		void const * data() const { return buffer.data(); }
 
+		size_t       size() const { return buffer.size(); }
+
+		void resize(size_t s)     {
+			buffer.resize(s);
+			if(cursor > s)
+				cursor = s;
+		}
+
+	public:
 		virtual size_t read_raw(void * data, size_t length) noexcept override;
 		virtual size_t write_raw(void const * data, size_t length) noexcept override;
 
+	public:
 		void rewind() override;
 
 		size_t tell() const  override;
 
 		size_t seek(ssize_t offset, seek_type type = set) override;
+	public:
+		memory_stream & operator = (memory_stream && other)
+		{
+			this->~memory_stream();
+			new (this) memory_stream(std::move(other));
+			return *this;
+		}
+
+		std::byte & operator[] (std::size_t index) { return buffer[index]; }
+		std::byte const & operator[] (std::size_t index) const { return buffer[index]; }
 	};
 	static_assert(std::is_move_constructible_v<memory_stream>);
 }

@@ -51,6 +51,9 @@ namespace xstd
 		T *       operator->()       { return _value; }
 		T const * operator->() const { return _value; }
 
+		T &       operator[](std::size_t index)       { return _value[index]; }
+		T const & operator[](std::size_t index) const { return _value[index]; }
+
 		operator bool() const { return (_value != nullptr); }
 
 		resource & operator = (resource && other)

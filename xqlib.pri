@@ -37,6 +37,7 @@ include($$PWD/pri/sqlite3.pri)
 include($$PWD/pri/openssl.pri)
 include($$PWD/pri/lzma.pri)
 include($$PWD/pri/nativefiledialog.pri)
+include($$PWD/pri/zstd.pri)
 
 DEFINES += XGL_ENABLE_GLM
 
@@ -95,7 +96,9 @@ HEADERS += \
     $$PWD/include/xio/file_stream \
     $$PWD/include/xio/utility \
     $$PWD/include/xgl/program_pipeline \
-    $$PWD/include/xio/seekable_stream
+    $$PWD/include/xio/seekable_stream \
+    $$PWD/include/xutility/perf_counter \
+    $$PWD/include/xio/compression/zstd
 
 !contains(CONFIG,xqlib_extern):{
 	message("include xqlib source")
@@ -118,3 +121,6 @@ HEADERS += \
     $$PWD/src/sqlite3.cpp \
     $$PWD/src/lzma.cpp
 }
+
+SOURCES += \
+    $$PWD/src/zstd.cpp

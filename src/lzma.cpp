@@ -20,6 +20,7 @@ namespace
 			{
 				case LZMA_OK:
 				case LZMA_STREAM_END:
+				case LZMA_NO_CHECK:
 					return ret;
 
 				case LZMA_MEM_ERROR:
@@ -84,19 +85,21 @@ namespace
 		}
 
 		operator lzma_stream *       ()       { return &stream; }
-		operator lzma_stream const * () const { return &stream; }
+		/// operator lzma_stream const * () const { return &stream; }
 
 		lzma_stream *       operator -> ()       { return &stream; }
-		lzma_stream const * operator -> () const { return &stream; }
+		/// lzma_stream const * operator -> () const { return &stream; }
 	};
 }
 
 static size_t do_compression(lzma_helper & strm, xio::istream& istream, xio::ostream& ostream)
 {
+	size_t constexpr buffer_size = (1 << 20);
+
 	lzma_action action = LZMA_RUN;
 
-	std::array<std::byte, BUFSIZ> inbuf;
-	std::array<std::byte, BUFSIZ> outbuf;
+	static thread_local std::array<std::byte, buffer_size> inbuf;
+	static thread_local std::array<std::byte, buffer_size> outbuf;
 
 	strm->next_in = nullptr;
 	strm->avail_in = 0;

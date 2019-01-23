@@ -6,6 +6,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 namespace
 {
 	xstd::optional<xgl::texture2D> load(std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> && mem, int _w, int _h)

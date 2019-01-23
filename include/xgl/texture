@@ -89,7 +89,7 @@ namespace xgl
 		T getParameter(GLenum key) const
 		{
 			T value;
-			if constexpr(std::is_integral_v<T>())
+			if constexpr(std::is_integral_v<T>)
 				glGetTextureParameteriv(id, key, &value);
 			else if constexpr(std::is_same_v<T, float>)
 			  glGetTextureParameterfv(id, key, &value);
@@ -101,14 +101,20 @@ namespace xgl
 		template<typename T>
 		T getLevelParameter(GLenum key, int level) const
 		{
-			T value;
 			if constexpr(std::is_integral_v<T>)
+			{
+				GLint value;
 				glGetTextureLevelParameteriv(id, level, key, &value);
+				return gsl::narrow_cast<T>(value);
+			}
 			else if constexpr(std::is_same_v<T, float>)
+			{
+				T value;
 			  glGetTextureLevelParameterfv(id, level, key, &value);
+				return value;
+			}
 			else
 				static_assert(dependent_false<T>::value, "T not supported");
-			return value;
 		}
 
 		void getSubImage(GLint level,
