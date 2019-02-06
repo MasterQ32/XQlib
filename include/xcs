@@ -67,6 +67,12 @@ namespace xcs
 		}
 	};
 
+	inline std::ostream & operator<<(std::ostream & stream, entity const & ent)
+	{
+		stream << "<[" << ent.id.value << "]>";
+		return stream;
+	}
+
 	struct component_store_base
 	{
 		virtual ~component_store_base() noexcept;
@@ -467,6 +473,19 @@ namespace xcs
 	inline void cleanup_universe(universe & uni) noexcept
 	{
 		uni.cleanup();
+	}
+
+	//! Searches all components in a given universe and returns the entity
+	//! it belongs to or nothing.
+	template<typename T>
+	inline std::optional<entity> find_owner(universe const & uni, T const * component_ptr)
+	{
+		for(auto [ ent, comp ] : xcs::get_components<T>(uni))
+		{
+			if(std::addressof(comp) == component_ptr)
+				return ent;
+		}
+		return std::nullopt;
 	}
 }
 #endif // ECS_HPP

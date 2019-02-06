@@ -159,6 +159,9 @@ namespace xapp
 
 	//! Returns the delta time between the last two update calls in seconds.
 	float dt();
+
+	//! Returns the total time since the application start in seconds.
+	float time();
 }
 
 

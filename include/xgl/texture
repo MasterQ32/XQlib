@@ -37,6 +37,14 @@ namespace xgl
 			return *this;
 		}
 	public:
+		void bind() const {
+			glBindTexture(TARGET, id);
+		}
+
+		void unbind() const {
+			glBindTexture(TARGET, 0);
+		}
+
 		void bind(GLuint unit) const {
 			glBindTextureUnit(unit, id);
 		}

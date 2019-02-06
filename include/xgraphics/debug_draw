@@ -63,6 +63,17 @@ namespace xgraphics
 
 		explicit debug_draw(bool autoClear = true);
 
+		debug_draw(debug_draw const &) = delete;
+		debug_draw(debug_draw &&) = default;
+
+		debug_draw & operator= (debug_draw const &) = delete;
+		debug_draw & operator= (debug_draw && other)
+		{
+			this->~debug_draw();
+			new (this) debug_draw(std::move(other));
+			return *this;
+		}
+
 		void point(glm::vec3 const & p, glm::vec4 const & c = glm::vec4(1.0, 0.0, 0.0, 1.0));
 
 		void line(glm::vec3 const & p0, glm::vec3 const & p1, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
@@ -79,6 +90,8 @@ namespace xgraphics
 
 		void clear();
 	};
+	static_assert(std::is_move_constructible_v<debug_draw>);
+	static_assert(std::is_move_assignable_v<debug_draw>);
 }
 
 #endif // XQLIB_DEBUG_DRAW_HPP

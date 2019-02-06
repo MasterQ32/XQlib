@@ -16,11 +16,7 @@ QMAKE_CXXFLAGS += $$WARNINGS
 QMAKE_LFLAGS   += $$WARNINGS
 
 # Install C++17
-CONFIG -= c++11
-CONFIG += c++17
-QMAKE_CXXFLAGS += -std=c++17
-QMAKE_LFLAGS += -std=c++17
-LIBS += -lstdc++fs
+include($$PWD/pri/c++17.pri)
 
 #include external modules
 include($$PWD/pri/sdl2.pri)
@@ -98,11 +94,17 @@ HEADERS += \
     $$PWD/include/xgl/program_pipeline \
     $$PWD/include/xio/seekable_stream \
     $$PWD/include/xutility/perf_counter \
-    $$PWD/include/xio/compression/zstd
+    $$PWD/include/xio/compression/zstd \
+    $$PWD/include/xstd/format \
+    $$PWD/include/xgraphics/hsv \
+    $$PWD/include/xio/simple \
+    $$PWD/include/xstd/fixed_string \
+    $$PWD/include/xstd/fixed \
+    $$PWD/include/xstd/type_traits/integer
 
 !contains(CONFIG,xqlib_extern):{
-	message("include xqlib source")
-	SOURCES += \
+		message("include xqlib source")
+		SOURCES += \
 		$$PWD/src/xlog.cpp \
 		$$PWD/src/xapp.cpp\
 		$$PWD/src/xcs.cpp \
@@ -122,5 +124,5 @@ HEADERS += \
     $$PWD/src/lzma.cpp
 }
 
-SOURCES += \
-    $$PWD/src/zstd.cpp
+SOURCES += $$PWD/src/zstd.cpp \
+    $$PWD/src/xstd_format.cpp

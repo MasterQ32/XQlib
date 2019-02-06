@@ -30,7 +30,7 @@ namespace
 
 	std::map<SDL_EventType, xapp::event_handler> event_handlers;
 
-	high_resolution_clock::time_point last_frame, this_frame;
+	high_resolution_clock::time_point startup_frame, last_frame, this_frame;
 
 	xlog::log appError()
 	{
@@ -290,7 +290,7 @@ bool xapp::init(xapp::mode mode, options const & opt)
 		}
 	}
 
-	this_frame = last_frame = high_resolution_clock::now();
+	this_frame = last_frame = startup_frame= high_resolution_clock::now();
 
 	return true;
 }
@@ -450,5 +450,12 @@ glm::ivec2 xapp::get_screen_resolution()
 float xapp::dt()
 {
 	auto const ms = std::chrono::duration_cast<std::chrono::microseconds>(this_frame - last_frame).count();
+	return float(ms * double(std::micro::num) / double(std::micro::den));
+}
+
+
+float xapp::time()
+{
+	auto const ms = std::chrono::duration_cast<std::chrono::microseconds>(this_frame - startup_frame).count();
 	return float(ms * double(std::micro::num) / double(std::micro::den));
 }

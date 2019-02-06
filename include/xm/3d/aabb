@@ -9,6 +9,16 @@ namespace xm3d
 	{
 		glm::vec3 min;
 		glm::vec3 max;
+
+		bool contains(glm::vec3 pt) const
+		{
+			return (pt.x >= min.x)
+			   and (pt.y >= min.z)
+				 and (pt.z >= min.z)
+			   and (pt.x <= max.x)
+			   and (pt.y <= max.y)
+			   and (pt.z <= max.z);
+		}
 	};
 }
 

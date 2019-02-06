@@ -31,6 +31,13 @@ namespace xgl
 			if(id != 0)
 				glDeleteFramebuffers(1, &id);
 		}
+
+		framebuffer & operator = (framebuffer && other)
+		{
+			this->~framebuffer();
+			new (this) framebuffer (std::move(other));
+			return *this;
+		}
 	public:
 
 		void bind(GLenum target = GL_FRAMEBUFFER)
@@ -79,6 +86,8 @@ namespace xgl
 			return (id != 0);
 		}
 	};
+	static_assert(std::is_move_constructible_v<framebuffer>);
+	static_assert(std::is_move_assignable_v<framebuffer>);
 }
 
 #endif // FRAMEBUFFER_HPP

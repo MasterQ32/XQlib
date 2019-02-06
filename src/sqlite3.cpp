@@ -6,11 +6,11 @@
 
 #define SQLITE3_EXEC(_Cmd) \
 	if(int __error = (_Cmd); __error != SQLITE_OK) \
-		throw xcept::io_error(sqlite3_errstr(__error));
+		throw xcept::db_error(sqlite3_errstr(__error));
 
 #define SQLITE3_EXEC_STMT(_Obj, _Cmd) \
 	if(int __error = (_Cmd); __error != SQLITE_OK) \
-		throw xcept::io_error(sqlite3_errmsg(sqlite3_db_handle(_Obj.get())));
+		throw xcept::db_error(sqlite3_errmsg(sqlite3_db_handle(_Obj.get())));
 
 xdb::sqlite3::statement::statement(::sqlite3_stmt * stmt) :
 	ptr(stmt)
@@ -76,7 +76,7 @@ size_t xdb::sqlite3::statement::param_index(std::string const & param) const
 {
 	auto const index = sqlite3_bind_parameter_index(const_cast<sqlite3_stmt*>(ptr.get()), param.c_str());
 	if(index <= 0)
-		throw xcept::io_error("param " + param + " not found!");
+		throw xcept::db_error("param " + param + " not found!");
 	return gsl::narrow<size_t>(index);
 }
 
@@ -89,6 +89,11 @@ xdb::sqlite3::statement & xdb::sqlite3::statement::bind(size_t param, int32_t va
 xdb::sqlite3::statement & xdb::sqlite3::statement::bind(size_t param, int64_t value)
 {
 	SQLITE3_EXEC_STMT(ptr, sqlite3_bind_int64(ptr.get(), gsl::narrow<int>(param), value));
+	return *this;
+}
+xdb::sqlite3::statement & xdb::sqlite3::statement::bind(size_t param, float value)
+{
+	SQLITE3_EXEC_STMT(ptr, sqlite3_bind_double(ptr.get(), gsl::narrow<int>(param), double(value)));
 	return *this;
 }
 xdb::sqlite3::statement & xdb::sqlite3::statement::bind(size_t param, double value)
@@ -127,6 +132,10 @@ xdb::sqlite3::statement & xdb::sqlite3::statement::bind(std::string const & para
 	return bind(param_index(param), value);
 }
 xdb::sqlite3::statement & xdb::sqlite3::statement::bind(std::string const & param, int64_t value)
+{
+	return bind(param_index(param), value);
+}
+xdb::sqlite3::statement & xdb::sqlite3::statement::bind(std::string const & param, float value)
 {
 	return bind(param_index(param), value);
 }
@@ -178,6 +187,11 @@ int64_t xdb::sqlite3::statement::column::as_int64() const
 	return gsl::narrow<int64_t>(sqlite3_column_int64(const_cast<sqlite3_stmt*>(stmt), gsl::narrow<int>(index)));
 }
 
+float xdb::sqlite3::statement::column::as_float() const
+{
+	return float(as_double());
+}
+
 double xdb::sqlite3::statement::column::as_double() const
 {
 	return sqlite3_column_double(const_cast<sqlite3_stmt*>(stmt), gsl::narrow<int>(index));
@@ -219,10 +233,10 @@ xdb::sqlite3::db::db(char const * fileName) :
 	ptr.reset(db_ptr);
 }
 
-xdb::sqlite3::statement xdb::sqlite3::db::prepare(std::string const & sql)
+xdb::sqlite3::statement xdb::sqlite3::db::prepare(std::string const & sql, unsigned int prepFlags)
 {
 	sqlite3_stmt *stmt;
-	SQLITE3_EXEC(sqlite3_prepare_v2(ptr.get(), sql.c_str(), gsl::narrow<int>(sql.size()), &stmt, nullptr));
+	SQLITE3_EXEC(sqlite3_prepare_v3(ptr.get(), sql.c_str(), gsl::narrow<int>(sql.size()), prepFlags, &stmt, nullptr));
 	assert(stmt != nullptr);
 	return statement(stmt);
 }

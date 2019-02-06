@@ -19,7 +19,9 @@ namespace xgl
 
 		buffer(buffer const &) = delete;
 
-		buffer(buffer && other) : id(other.id) {
+		buffer(buffer && other) :
+		  id(other.id)
+		{
 			other.id = 0;
 		}
 
@@ -28,6 +30,8 @@ namespace xgl
 			if(id != 0)
 				glDeleteBuffers(1, &id);
 		}
+
+		buffer & operator= (buffer &&) = default;
 	public:
 		void storage(size_t size, GLbitfield flags = 0) {
 			glNamedBufferStorage(id, gsl::narrow<GLsizei>(size), nullptr, flags);
@@ -71,12 +75,23 @@ namespace xgl
 			glNamedBufferData(id, sizeof(T) * data.size(), data.data(), usage);
 		}
 
-		void subData(GLsizei size, const void *data) {
-			glNamedBufferSubData(id, 0, size, data);
+		void subData(void const * data, size_t size, size_t offset = 0) {
+			glNamedBufferSubData(id, gsl::narrow<GLsizeiptr>(offset), gsl::narrow<GLsizei>(size), data);
 		}
 
-		void subData(GLintptr offset, GLsizei size, const void *data) {
-			glNamedBufferSubData(id, offset, size, data);
+		template<typename T>
+		void subData(T const * data, size_t count, size_t offset = 0) {
+			subData(static_cast<void const *>(data), count * sizeof(T), offset);
+		}
+
+		template<typename T, size_t count>
+		void subData(T const (&data)[count], size_t offset = 0) {
+			subData(static_cast<void const *>(data), count * sizeof(T), offset);
+		}
+
+		template<typename T>
+		void subData(std::vector<T> const & data, size_t offset = 0) {
+			subData(static_cast<void const *>(data.data()), data.size() * sizeof(T), offset);
 		}
 
 	public:
@@ -88,6 +103,9 @@ namespace xgl
 			return (id != 0);
 		}
 	};
+
+	static_assert(std::is_move_constructible_v<buffer>);
+	static_assert(std::is_move_assignable_v<buffer>);
 }
 
 #endif

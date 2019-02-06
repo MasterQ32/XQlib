@@ -16,4 +16,5 @@
 XCEPTION(invalid_argument)
 XCEPTION(invalid_operation)
 XCEPTION(io_error)
+XCEPTION(db_error)
 XCEPTION(end_of_stream)

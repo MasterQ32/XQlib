@@ -1,11 +1,13 @@
 #include "../include/xlog"
 
 #include <iostream>
+#include <mutex>
 
 namespace
 {
 	bool colored_output = false;
 	xlog::log_level min_level = xlog::message;
+	std::mutex output_lock;
 }
 
 void xlog::enable_colors(bool enabled)
@@ -36,6 +38,8 @@ xlog::log::~log()
 {
 	if(level >= min_level)
 	{
+		std::lock_guard _ { output_lock };
+
 		auto & stream =  (level >= warning) ? std::cerr : std::cout;
 
 		if(colored_output)

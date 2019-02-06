@@ -1,0 +1,209 @@
+#ifndef XQLIB_XSTD_FIXED_HPP
+#define XQLIB_XSTD_FIXED_HPP
+
+#include "type_traits/integer"
+
+namespace xstd
+{
+	//! fixed point arithmetic type with configurable size.
+	//! @tparam integrals Number of integral bits
+	//! @tparam decimals Number of decimal bits
+	template<std::size_t IntegralBits, std::size_t DecimalBits>
+	struct fixed
+  {
+	public: // template argument propagation
+		static constexpr std::size_t integral_bits = IntegralBits;
+		static constexpr std::size_t decimal_bits = DecimalBits;
+
+  public: // static types
+		typedef typename type_traits::int_by_size<std::size_t((integral_bits + decimal_bits + 7) / 8)>::type word_t;
+		typedef typename type_traits::next_bigger_int<word_t>::type dword_t; // double word
+		typedef typename type_traits::next_smaller_int<word_t>::type hword_t; // half word
+
+  public: // static members
+		static constexpr word_t decimal_factor = (1 << decimal_bits);
+		static constexpr word_t decimal_mask   = (decimal_factor - 1);
+		static constexpr word_t integral_mask  = ~decimal_mask;
+
+		static_assert(decimal_mask >= 0, "Too many decimal bits! Exceeds bit limit");
+		static_assert(integral_mask != 0, "Too many decimal bits! Exceeds bit limit");
+
+  public: // members
+		word_t value;
+
+  public: // constructors
+		constexpr fixed() : value(0) { }
+		constexpr fixed(float v)  : value(word_t(v * decimal_factor + 0.5)) { }
+		constexpr fixed(double v) : value(word_t(v * decimal_factor + 0.5)) { }
+		constexpr fixed(int i)    : value(word_t(i) * decimal_factor) { }
+		constexpr fixed(unsigned int i)    : value(word_t(i) * decimal_factor) { }
+
+  public: // functions
+
+		constexpr static fixed raw(word_t value) {
+				fixed f;
+				f.value = value;
+				return f;
+		}
+
+		constexpr int decimal_part() const {
+				return this->value & decimal_mask;
+		}
+
+		constexpr int integral_part() const {
+				return this->value & integral_mask;
+		}
+
+  public: // arithmetic operators
+
+		constexpr fixed operator+ (fixed const & o) const {
+				return fixed::raw(this->value + o.value);
+		}
+		constexpr fixed operator- (fixed const & o) const {
+				return fixed::raw(this->value - o.value);
+		}
+		constexpr fixed operator* (fixed const & o) const {
+				fixed r = *this;
+				r.mul(o);
+				return r;
+		}
+		constexpr fixed operator/ (fixed const & o) const {
+				fixed r = *this;
+				r.div(o);
+				return r;
+		}
+		constexpr fixed operator* (hword_t o) const {
+				fixed r = *this;
+				r.mul(o);
+				return r;
+		}
+		constexpr fixed operator/ (hword_t o) const {
+				fixed r = *this;
+				r.div(o);
+				return r;
+		}
+
+  public: // relational operators
+		constexpr bool operator ==(fixed const & o) const {
+				return (this->value == o.value);
+		}
+		constexpr bool operator !=(fixed const & o) const {
+				return (this->value != o.value);
+		}
+		constexpr bool operator >=(fixed const & o) const {
+				return (this->value >= o.value);
+		}
+		constexpr bool operator <=(fixed const & o) const {
+				return (this->value <= o.value);
+		}
+		constexpr bool operator >(fixed const & o) const {
+				return (this->value > o.value);
+		}
+		constexpr bool operator <(fixed const & o) const {
+				return (this->value < o.value);
+		}
+
+  public: // self-applying operators
+		constexpr fixed & operator += (fixed const & o) {
+				return (*this = *this + o);
+		}
+
+		constexpr fixed & operator -= (fixed const & o) {
+				return (*this = *this - o);
+		}
+
+		constexpr fixed & operator *= (fixed const & o) {
+				this->mul(o);
+				return *this;
+		}
+
+		constexpr fixed & operator /= (fixed const & o) {
+				this->div(o);
+				return *this;
+		}
+
+		constexpr fixed & operator *= (hword_t o) {
+				this->mul(o);
+				return *this;
+		}
+
+		constexpr fixed & operator /= (hword_t o) {
+				this->div(o);
+				return *this;
+		}
+
+  public: // conversion operators
+      explicit constexpr operator int() const {
+          return (this->value / decimal_factor);
+      }
+
+      explicit constexpr operator float() const {
+          return (this->value / float(decimal_factor));
+      }
+
+      explicit constexpr operator double() const {
+          return (this->value / double(decimal_factor));
+      }
+  private: // arithmetic
+      constexpr void mul(fixed const & o)
+      {
+          dword_t const r = dword_t(this->value) * o.value;
+          this->value = word_t(r / decimal_factor);
+      }
+
+      constexpr void mul(std::make_signed_t<hword_t> o)
+      {
+          this->value *= o;
+      }
+
+      constexpr void mul(std::make_unsigned_t<hword_t> o)
+      {
+          this->value *= o;
+      }
+
+      constexpr void div(const fixed& o)
+      {
+          // assert(o.value != 0);
+          dword_t const x = dword_t(this->value) * decimal_factor;
+          this->value = word_t(x / o.value);
+      }
+
+      constexpr void div(std::make_signed_t<hword_t> o)
+      {
+          // assert(o != 0);
+          this->value /= o;
+      }
+
+      constexpr void div(std::make_unsigned_t<hword_t>o)
+      {
+          // assert(o != 0);
+          this->value /= o;
+      }
+  };
+
+	template<int I, int D>
+  inline constexpr fixed<I, D> floor(fixed<I, D> val) {
+      val.value &= val.integral_mask;
+			return val;
+  }
+
+	template<int I, int D>
+  inline fixed<I, D> ceil(fixed<I, D> val) {
+      return fixed<I, D>::raw(val.integral_part() + val.decimal_factor);
+  }
+
+  template<int I, int D>
+  inline fixed<I, D> fract(fixed<I, D> val) {
+      return fixed<I, D>::raw(val.decimal_part());
+  }
+
+  template<int I, int D>
+  inline fixed<I, D> abs(fixed<I, D> val) {
+      if(val.value < 0)
+          return fixed<I, D>::raw(-val.value);
+      else
+          return fixed<I, D>::raw(val.value);
+  }
+}
+
+#endif

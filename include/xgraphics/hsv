@@ -1,0 +1,67 @@
+#ifndef XQLIB_HSV_HPP
+#define XQLIB_HSV_HPP
+
+#include <glm/glm.hpp>
+
+namespace xgraphics
+{
+	struct hsv
+	{
+		float h, s, v;
+
+		hsv() noexcept = default;
+
+		hsv(float _h, float _s, float _v) : h(_h), s(_s), v(_v) { }
+	};
+
+	struct hsva : hsv
+	{
+		float a;
+
+		hsva() noexcept = default;
+		hsva(float _h, float _s, float _v, float _a = 1.0f) : hsv(_h, _s, _v), a(_a) { }
+	};
+
+	//http://gamedev.stackexchange.com/questions/59797/glsl-shader-change-hue-saturation-brightness
+	hsva inline GLM_CONSTEXPR rgb2hsv(glm::vec4 c)
+	{
+		using namespace glm;
+		vec4 K = vec4(0.0f, -1.0f / 3.0f, 2.0f / 3.0f, -1.0f);
+		vec4 p = mix(vec4(c.b, c.g, K.w, K.z), vec4(c.g, c.b, K.x, K.y), step(c.b, c.g));
+		vec4 q = mix(vec4(p.x, p.y, p.w, c.r), vec4(c.r, p.y, p.z, p.x), step(p.x, c.r));
+
+		float d = q.x - min(q.w, q.y);
+		float constexpr e = 1.0e-10f;
+		return hsva(abs(q.z + (q.w - q.y) / (6.0f * d + e)), d / (q.x + e), q.x, c.a);
+	}
+
+	hsv inline GLM_CONSTEXPR rgb2hsv(glm::vec3 c)
+	{
+		return rgb2hsv(glm::vec4(c, 1.0f));
+	}
+
+	hsv inline GLM_CONSTEXPR rgb2hsv(float r, float g, float b)
+	{
+		return rgb2hsv(glm::vec4(r,g,b, 1.0f));
+	}
+
+	glm::vec4 inline GLM_CONSTEXPR hsv2rgb(hsva c)
+	{
+		using namespace glm;
+		vec4 K = vec4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
+		vec3 p = abs(fract(vec3(c.h) + vec3(K)) * 6.0f - vec3(K.w));
+		return vec4(c.v * mix(vec3(K.x), clamp(p - vec3(K.x), 0.0f, 1.0f), c.s), c.a);
+	}
+
+	glm::vec3 inline GLM_CONSTEXPR hsv2rgb(hsv c)
+	{
+		return hsv2rgb(hsva(c.h, c.s, c.v, 1.0f));
+	}
+
+	glm::vec3 inline GLM_CONSTEXPR hsv2rgb(float h, float s, float v)
+	{
+		return hsv2rgb(hsva(h, s, v, 1.0f));
+	}
+}
+
+#endif // HSV_HPP

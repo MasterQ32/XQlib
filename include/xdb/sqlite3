@@ -29,6 +29,7 @@ namespace xdb::sqlite3
 
 			int32_t                as_int32() const;
 			int64_t                as_int64() const;
+			float                  as_float() const;
 			double                 as_double() const;
 			std::string            as_text() const;
 			std::vector<std::byte> as_blob() const;
@@ -40,6 +41,15 @@ namespace xdb::sqlite3
 				assert(size() == N);
 				memcpy(result.data(), sqlite3_column_blob(const_cast<sqlite3_stmt*>(stmt), gsl::narrow<int>(index)), N);
 				return result;
+			}
+
+			template<typename T>
+			T as_blob() const
+			{
+				T value;
+				assert(size() == sizeof(T));
+				memcpy(&value, sqlite3_column_blob(const_cast<sqlite3_stmt*>(stmt), gsl::narrow<int>(index)), sizeof(T));
+				return value;
 			}
 		};
 
@@ -80,17 +90,43 @@ namespace xdb::sqlite3
 
 		statement & bind(size_t param, int32_t value);
 		statement & bind(size_t param, int64_t value);
+		statement & bind(size_t param, float value);
 		statement & bind(size_t param, double value);
 		statement & bind(size_t param, std::string const & value);
 		statement & bind(size_t param, dbnull_t);
 		statement & bind(size_t param, void const * data, size_t length);
 
+		template<typename T, size_t N>
+		statement & bind_blob(size_t const & param, T const (&data)[N])
+		{
+			bind(param, sizeof(T) * N, data);
+		}
+
+		template<typename T>
+		statement & bind_blob(size_t const & param, T const & value)
+		{
+			bind(param, sizeof value, &value);
+		}
+
 		statement & bind(std::string const & param, int32_t value);
 		statement & bind(std::string const & param, int64_t value);
+		statement & bind(std::string const & param, float value);
 		statement & bind(std::string const & param, double value);
 		statement & bind(std::string const & param, std::string const & value);
 		statement & bind(std::string const & param, dbnull_t);
 		statement & bind(std::string const & param, void const * data, size_t length);
+
+		template<typename T, size_t N>
+		statement & bind_blob(std::string const & param, T const (&data)[N])
+		{
+			return bind(param, data, sizeof(T) * N);
+		}
+
+		template<typename T>
+		statement & bind_blob(std::string const & param, T const & value)
+		{
+			return bind(param, &value, sizeof value);
+		}
 
 
 		template<typename F>
@@ -111,7 +147,7 @@ namespace xdb::sqlite3
 
 		explicit db(char const * fileName);
 
-		statement prepare(std::string const & sql);
+		statement prepare(std::string const & sql, unsigned int prepFlags = SQLITE_PREPARE_PERSISTENT);
 	};
 }
 

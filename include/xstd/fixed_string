@@ -1,0 +1,94 @@
+#ifndef XQLIB_XSTD_FIXED_STRING_HPP
+#define XQLIB_XSTD_FIXED_STRING_HPP
+
+#include <array>
+#include <string>
+#include <cstring>
+
+namespace xstd
+{
+	template<typename TChar, size_t N>
+	struct basic_fixed_string : public std::array<TChar, N>
+	{
+		using std::array<TChar, N>::array;
+
+		basic_fixed_string() noexcept = default;
+
+		basic_fixed_string(TChar const (&str)[N]) noexcept
+		{
+			memcpy(this->data(), str, N);
+		}
+
+		template<size_t M>
+		basic_fixed_string(TChar const (&str)[M]) noexcept
+		{
+			std::memcpy(this->data(), str, std::min(M, this->max_size() - 1));
+			this->back() = '\0'; // add terminator
+		}
+
+		basic_fixed_string(char const * str) noexcept
+		{
+			std::strncpy(this->data(), str, this->max_size());
+		}
+
+		basic_fixed_string(std::string const & str) noexcept
+		{
+			std::memcpy(this->data(), str.data(), std::min(str.size(), this->max_size() - 1));
+			this->back() = '\0'; // add terminator
+		}
+
+		char const * c_str() const noexcept
+		{
+			return this->data();
+		}
+
+		size_t size() const noexcept
+		{
+			return strnlen(this->data(), this->max_size());
+		}
+	};
+
+	template<size_t N1, size_t N2, typename T>
+	inline bool operator== (basic_fixed_string<T, N1> const & lhs, basic_fixed_string<T, N1> const & rhs)
+	{
+		return (strcmp(lhs.c_str(), rhs.c_str()) == 0);
+	}
+
+	template<size_t N1, size_t N2, typename T>
+	inline bool operator!= (basic_fixed_string<T, N1> const & lhs, basic_fixed_string<T, N1> const & rhs)
+	{
+		return not (lhs == rhs);
+	}
+
+	template<size_t N1, size_t N2, typename T>
+	inline bool operator< (basic_fixed_string<T, N1> const & lhs, basic_fixed_string<T, N1> const & rhs)
+	{
+		return (strcmp(lhs.c_str(), rhs.c_str()) < 0);
+	}
+
+	template<size_t N1, size_t N2, typename T>
+	inline bool operator> (basic_fixed_string<T, N1> const & lhs, basic_fixed_string<T, N1> const & rhs)
+	{
+		return (strcmp(lhs.c_str(), rhs.c_str()) > 0);
+	}
+
+	template<size_t N1, size_t N2, typename T>
+	inline bool operator<= (basic_fixed_string<T, N1> const & lhs, basic_fixed_string<T, N1> const & rhs)
+	{
+		return (strcmp(lhs.c_str(), rhs.c_str()) <= 0);
+	}
+
+	template<size_t N1, size_t N2, typename T>
+	inline bool operator>= (basic_fixed_string<T, N1> const & lhs, basic_fixed_string<T, N1> const & rhs)
+	{
+		return (strcmp(lhs.c_str(), rhs.c_str()) >= 0);
+	}
+
+	template<size_t N>
+	using fixed_string = basic_fixed_string<char, N>;
+
+	template<size_t N>
+	using fixed_wstring = basic_fixed_string<wchar_t, N>;
+}
+
+#endif // FIXED_STRING_HPP

@@ -5,6 +5,7 @@
 #include "../include/xio/file_stream"
 #include "../include/xio/seekable_stream"
 #include "../include/xio/utility"
+#include "../include/xio/simple"
 #include "../include/xcept"
 
 #include <sstream>
@@ -258,4 +259,31 @@ void xio::copy(istream & source, ostream & target, size_t num_bytes)
 		target.write(buffer.data(), count);
 		num_bytes -= count;
 	}
+}
+
+
+// simple api:
+
+std::string xio::load_string(std::filesystem::path const & path)
+{
+	auto const data = load_raw(path);
+	return std::string(reinterpret_cast<char const *>(data.data()), data.size());
+}
+
+std::vector<std::byte> xio::load_raw(std::filesystem::path const & path)
+{
+	xio::file_stream stream(path, "rb");
+	return stream.read_to_end();
+}
+
+void xio::save_string(std::filesystem::path const & path, std::string const & value)
+{
+	save_raw(path, reinterpret_cast<std::byte const *>(value.c_str()), value.size());
+}
+
+void xio::save_raw(std::filesystem::path const & path, std::byte const * value, size_t length)
+{
+	xio::file_stream stream(path, "wb");
+	stream.write(value, length);
+	stream.flush();
 }

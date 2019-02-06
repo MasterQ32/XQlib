@@ -62,6 +62,30 @@ namespace xstd
 			new (this) resource(std::move(other));
 			return *this;
 		}
+
+		bool operator== (resource const & other) const {
+			return _value == other._value;
+		}
+
+		bool operator== (T const * other) const {
+			return _value == other;
+		}
+
+		bool operator== (std::nullptr_t) const {
+			return (_value == nullptr);
+		}
+
+		bool operator!= (resource const & other) const {
+			return _value != other._value;
+		}
+
+		bool operator!= (T const * other) const {
+			return _value != other;
+		}
+
+		bool operator!= (std::nullptr_t) const {
+			return (_value != nullptr);
+		}
 	};
 }
 

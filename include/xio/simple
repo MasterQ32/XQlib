@@ -1,0 +1,16 @@
+#ifndef XQLIB_XIO_SIMPLE_HPP
+#define XQLIB_XIO_SIMPLE_HPP
+
+#include <filesystem>
+#include <vector>
+
+namespace xio
+{
+	std::string load_string(std::filesystem::path const & path);
+	std::vector<std::byte> load_raw(std::filesystem::path const & path);
+
+	void save_string(std::filesystem::path const & path, std::string const & value);
+	void save_raw(std::filesystem::path const & path, std::byte const * value, size_t length);
+}
+
+#endif // XQLIB_XIO_SIMPLE_HPP
