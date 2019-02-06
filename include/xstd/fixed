@@ -6,8 +6,8 @@
 namespace xstd
 {
 	//! fixed point arithmetic type with configurable size.
-	//! @tparam integrals Number of integral bits
-	//! @tparam decimals Number of decimal bits
+	//! @tparam IntegralBits Number of integral bits
+	//! @tparam DecimalBits Number of decimal bits
 	template<std::size_t IntegralBits, std::size_t DecimalBits>
 	struct fixed
   {
@@ -40,17 +40,26 @@ namespace xstd
 
   public: // functions
 
-		constexpr static fixed raw(word_t value) {
+		constexpr static fixed raw(word_t value)
+		{
 				fixed f;
 				f.value = value;
 				return f;
 		}
 
-		constexpr int decimal_part() const {
+		//! returns the smallest possible value representable by fixed.
+		static constexpr fixed epsilon()
+		{
+			fixed f;
+			f.value = 1;
+			return f;
+		}
+
+		constexpr word_t decimal_part() const {
 				return this->value & decimal_mask;
 		}
 
-		constexpr int integral_part() const {
+		constexpr word_t integral_part() const {
 				return this->value & integral_mask;
 		}
 
@@ -181,24 +190,27 @@ namespace xstd
       }
   };
 
-	template<int I, int D>
-  inline constexpr fixed<I, D> floor(fixed<I, D> val) {
-      val.value &= val.integral_mask;
-			return val;
+	template<std::size_t I, std::size_t D>
+  inline constexpr fixed<I, D> floor(fixed<I, D> val)
+	{
+		return fixed<I, D>::raw(val.integral_part());
   }
 
-	template<int I, int D>
-  inline fixed<I, D> ceil(fixed<I, D> val) {
-      return fixed<I, D>::raw(val.integral_part() + val.decimal_factor);
+	template<std::size_t I, std::size_t D>
+  inline constexpr fixed<I, D> ceil(fixed<I, D> val)
+	{
+      return floor(val + fixed<I,D>::raw(val.decimal_mask));
   }
 
-  template<int I, int D>
-  inline fixed<I, D> fract(fixed<I, D> val) {
+  template<std::size_t I, std::size_t D>
+  inline constexpr fixed<I, D> fract(fixed<I, D> val)
+	{
       return fixed<I, D>::raw(val.decimal_part());
   }
 
-  template<int I, int D>
-  inline fixed<I, D> abs(fixed<I, D> val) {
+  template<std::size_t I, std::size_t D>
+  inline constexpr fixed<I, D> abs(fixed<I, D> val)
+	{
       if(val.value < 0)
           return fixed<I, D>::raw(-val.value);
       else

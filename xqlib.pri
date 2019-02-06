@@ -125,4 +125,5 @@ HEADERS += \
 }
 
 SOURCES += $$PWD/src/zstd.cpp \
-    $$PWD/src/xstd_format.cpp
+    $$PWD/src/xstd_format.cpp \
+    $$PWD/src/xstd_fixed.cpp
