@@ -33,7 +33,8 @@ namespace xstd
 
   public: // constructors
 		constexpr fixed() : value(0) { }
-		constexpr fixed(float v)  : value(word_t(v * decimal_factor + 0.5)) { }
+		constexpr fixed(fixed const & v) : value(v.value) { }
+		constexpr fixed(float v)  : value(word_t(v * decimal_factor + 0.5f)) { }
 		constexpr fixed(double v) : value(word_t(v * decimal_factor + 0.5)) { }
 		constexpr fixed(int i)    : value(word_t(i) * decimal_factor) { }
 		constexpr fixed(unsigned int i)    : value(word_t(i) * decimal_factor) { }
@@ -65,69 +66,68 @@ namespace xstd
 
   public: // arithmetic operators
 
-		constexpr fixed operator+ (fixed const & o) const {
+		constexpr fixed operator+() const
+		{
+			return *this;
+		}
+
+		constexpr fixed operator-() const
+		{
+			return fixed::raw(-value);
+		}
+
+		constexpr fixed operator+ (fixed o) const
+		{
 				return fixed::raw(this->value + o.value);
 		}
-		constexpr fixed operator- (fixed const & o) const {
+
+		constexpr fixed operator- (fixed o) const
+		{
 				return fixed::raw(this->value - o.value);
 		}
-		constexpr fixed operator* (fixed const & o) const {
+
+		constexpr fixed operator* (fixed o) const {
 				fixed r = *this;
 				r.mul(o);
 				return r;
 		}
-		constexpr fixed operator/ (fixed const & o) const {
-				fixed r = *this;
-				r.div(o);
-				return r;
-		}
+
 		constexpr fixed operator* (hword_t o) const {
 				fixed r = *this;
 				r.mul(o);
 				return r;
 		}
+
+		constexpr fixed operator/ (fixed o) const {
+				fixed r = *this;
+				r.div(o);
+				return r;
+		}
+
 		constexpr fixed operator/ (hword_t o) const {
 				fixed r = *this;
 				r.div(o);
 				return r;
 		}
 
-  public: // relational operators
-		constexpr bool operator ==(fixed const & o) const {
-				return (this->value == o.value);
-		}
-		constexpr bool operator !=(fixed const & o) const {
-				return (this->value != o.value);
-		}
-		constexpr bool operator >=(fixed const & o) const {
-				return (this->value >= o.value);
-		}
-		constexpr bool operator <=(fixed const & o) const {
-				return (this->value <= o.value);
-		}
-		constexpr bool operator >(fixed const & o) const {
-				return (this->value > o.value);
-		}
-		constexpr bool operator <(fixed const & o) const {
-				return (this->value < o.value);
+		constexpr fixed operator% (fixed o) const
+		{
+			fixed r = *this;
+			r.value %= o.value;
+			return r;
 		}
 
-  public: // self-applying operators
-		constexpr fixed & operator += (fixed const & o) {
+  public: // self-applying arithmetic operators
+		constexpr fixed & operator += (fixed o) {
 				return (*this = *this + o);
 		}
 
-		constexpr fixed & operator -= (fixed const & o) {
+		constexpr fixed & operator -= (fixed o) {
 				return (*this = *this - o);
 		}
 
-		constexpr fixed & operator *= (fixed const & o) {
+		constexpr fixed & operator *= (fixed o) {
 				this->mul(o);
-				return *this;
-		}
-
-		constexpr fixed & operator /= (fixed const & o) {
-				this->div(o);
 				return *this;
 		}
 
@@ -136,9 +136,112 @@ namespace xstd
 				return *this;
 		}
 
+		constexpr fixed & operator /= (fixed o) {
+				this->div(o);
+				return *this;
+		}
+
 		constexpr fixed & operator /= (hword_t o) {
 				this->div(o);
 				return *this;
+		}
+
+		constexpr fixed & operator %= (fixed o) {
+				*this = *this % o;
+				return *this;
+		}
+
+	public: // relational operators
+		constexpr bool operator ==(fixed o) const {
+				return (this->value == o.value);
+		}
+		constexpr bool operator !=(fixed o) const {
+				return (this->value != o.value);
+		}
+		constexpr bool operator >=(fixed o) const {
+				return (this->value >= o.value);
+		}
+		constexpr bool operator <=(fixed o) const {
+				return (this->value <= o.value);
+		}
+		constexpr bool operator >(fixed o) const {
+				return (this->value > o.value);
+		}
+		constexpr bool operator <(fixed o) const {
+				return (this->value < o.value);
+		}
+
+	public: // bitwise operators
+		constexpr fixed operator~ () const
+		{
+			return raw(~this->value);
+		}
+
+		constexpr fixed operator & (fixed o) const
+		{
+			return raw(this->value & o.value);
+		}
+
+		constexpr fixed operator | (fixed o) const
+		{
+			return raw(this->value | o.value);
+		}
+
+		constexpr fixed operator ^ (fixed o) const
+		{
+			return raw(this->value ^ o.value);
+		}
+
+		constexpr fixed operator << (std::size_t bits) const
+		{
+			using uword_t = std::make_unsigned_t<word_t>();
+			auto const val = reinterpret_cast<uword_t>(this->value);
+			val <<= bits;
+			return raw(reinterpret_cast<word_t>(val));
+		}
+
+		constexpr fixed operator >> (std::size_t bits) const
+		{
+			using uword_t = std::make_unsigned_t<word_t>();
+			auto uval = reinterpret_cast<uword_t>(this->value);
+			uval >>= bits;
+			if(this->value < 0)
+			{
+				// now sign-extend the shifted value by bits
+				uval |= ~(uword_t(-1) >> bits);
+			}
+			return raw(reinterpret_cast<word_t>(uval));
+		}
+
+	public: // bitwise selfapplying operators
+		constexpr fixed & operator &= (fixed o) const
+		{
+			*this = (*this & o);
+			return *this;
+		}
+
+		constexpr fixed & operator |= (fixed o) const
+		{
+			*this = (*this | o);
+			return *this;
+		}
+
+		constexpr fixed & operator ^= (fixed o) const
+		{
+			*this = (*this ^ o);
+			return *this;
+		}
+
+		constexpr fixed & operator <<= (std::size_t bits) const
+		{
+			*this = (*this << bits);
+			return *this;
+		}
+
+		constexpr fixed & operator >>= (std::size_t bits) const
+		{
+			*this = (*this >> bits);
+			return *this;
 		}
 
   public: // conversion operators
