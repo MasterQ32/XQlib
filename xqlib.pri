@@ -100,7 +100,8 @@ HEADERS += \
     $$PWD/include/xio/simple \
     $$PWD/include/xstd/fixed_string \
     $$PWD/include/xstd/fixed \
-    $$PWD/include/xstd/type_traits/integer
+    $$PWD/include/xstd/type_traits/integer \
+    $$PWD/include/xutility/debug_camera
 
 !contains(CONFIG,xqlib_extern):{
 		message("include xqlib source")
@@ -126,4 +127,5 @@ HEADERS += \
 
 SOURCES += $$PWD/src/zstd.cpp \
     $$PWD/src/xstd_format.cpp \
-    $$PWD/src/xstd_fixed.cpp
+    $$PWD/src/xstd_fixed.cpp \
+    $$PWD/src/debug_camera.cpp

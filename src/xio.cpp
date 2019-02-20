@@ -94,9 +94,11 @@ std::vector<std::byte> xio::istream::read_to_end()
 
 		auto const count = read_raw(&result[start], block_size);
 		if(count == 0)
+		{
+			result.resize(start);
 			break;
-		else
-			result.resize(start + gsl::narrow_cast<size_t>(count));
+		}
+		result.resize(start + gsl::narrow_cast<size_t>(count));
 	}
 	return result;
 }

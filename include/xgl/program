@@ -42,9 +42,16 @@ namespace xgl
 				glDeleteProgram(id);
 		}
 
-		static xstd::optional<program> create_stage(GLenum shader_type, std::string const & text)
+		program & operator = (program && other)
 		{
-			auto const str = text.c_str();
+			this->~program();
+			new (this) program(std::move(other));
+			return *this;
+		}
+
+		static xstd::optional<program> create_stage(GLenum shader_type, std::string const & code)
+		{
+			auto const str = code.c_str();
 			GLuint id = glCreateShaderProgramv(shader_type, 1, &str);
 			if(id != 0)
 				return program(id);
@@ -117,5 +124,6 @@ namespace xgl
 		}
 	};
 	static_assert(std::is_move_constructible_v<program>);
+	static_assert(std::is_move_assignable_v<program>);
 }
 #endif // PROGRAM_HPP

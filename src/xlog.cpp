@@ -8,11 +8,21 @@ namespace
 	bool colored_output = false;
 	xlog::log_level min_level = xlog::message;
 	std::mutex output_lock;
+#ifdef DEBUG
+	bool die_on_critical = true;
+#else
+	bool die_on_critical = false;
+#endif
 }
 
 void xlog::enable_colors(bool enabled)
 {
 	colored_output = enabled;
+}
+
+void xlog::abort_on_critical(bool enabled)
+{
+	die_on_critical = enabled;
 }
 
 void xlog::set_verbosity(log_level min)
@@ -66,6 +76,6 @@ xlog::log::~log()
 			stream << "\x1b[39m";
 		}
 	}
-	if(level >= critical)
+	if((level >= critical) and die_on_critical)
 		abort();
 }

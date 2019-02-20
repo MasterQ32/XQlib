@@ -14,13 +14,20 @@ namespace xinput::sdl
 		mouse_button = 2,
 	};
 
+	struct sdl_input_module : input_module
+	{
+		void begin_update() override;
+	};
+
+	extern sdl_input_module * const module;
+
 	void clear_mapping();
 	void clear_mapping_for(button btn);
 
 	void add_mapping   (button btn, button_type type, int value);
 	void remove_mapping(button btn, button_type type, int value);
 
-	void add_mapping(axis ax, SDL_Scancode scancode, float delta);
+	void add_mapping(axis ax, button_type type, int value, float delta);
 
 	bool process_event(SDL_Event const & ev);
 }

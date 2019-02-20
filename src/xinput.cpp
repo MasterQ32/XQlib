@@ -2,6 +2,7 @@
 #include "../include/xcept"
 
 #include <vector>
+#include <set>
 #include <glm/glm.hpp>
 
 
@@ -13,6 +14,8 @@ namespace
 		if(updating)
 			throw xcept::invalid_operation("cannot query input state while updating.");
 	}
+
+	std::set<xinput::input_module*> modules;
 
 	struct button_info
 	{
@@ -44,6 +47,25 @@ namespace
 	}
 }
 
+xinput::input_module::~input_module() { }
+void xinput::input_module::init() { }
+void xinput::input_module::begin_update() { }
+void xinput::input_module::end_update() { }
+void xinput::input_module::deinit() { }
+
+void xinput::add_module(input_module * module)
+{
+	auto [ it, inserted ] = modules.emplace(module);
+	if(inserted)
+		module->init();
+}
+
+void xinput::remove_module(input_module * module)
+{
+	if(modules.erase(module) > 0)
+		module->deinit();
+}
+
 void xinput::begin_update()
 {
 	if(updating)
@@ -61,6 +83,8 @@ void xinput::begin_update()
 		if(axis.type == relative)
 			axis.value = 0.0f;
 	}
+	for(auto * mod : modules)
+		mod->begin_update();
 }
 
 void xinput::update_button(button btn, bool is_pressed)
@@ -124,6 +148,8 @@ void xinput::end_update()
 {
 	if(not updating)
 		throw xcept::invalid_operation("xinput::begin_update: begin_update was not called.");
+	for(auto * mod : modules)
+		mod->end_update();
 	updating = false;
 	for(auto & axis : axes)
 	{
@@ -181,6 +207,7 @@ float xinput::delta(axis axis)
 {
 	check_updating();
 	if(V(axis).type == relative)
-		return 0.0;
-	return V(axis).value - V(axis).last_value;
+		return V(axis).value;
+	else
+		return V(axis).value - V(axis).last_value;
 }

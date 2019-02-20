@@ -6,8 +6,6 @@ namespace /* private */
 {
 	std::regex format_pattern("%(\\d+)");
 
-
-
 	std::string replace_pattern(std::string const & input, std::string const & repl)
 	{
 		std::string result;

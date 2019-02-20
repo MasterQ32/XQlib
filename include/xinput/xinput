@@ -23,7 +23,19 @@ namespace xinput
 		relative,
 	};
 
+	struct input_module
+	{
+		virtual ~input_module();
+		virtual void init();
+		virtual void begin_update();
+		virtual void end_update();
+		virtual void deinit();
+	};
+
 	// generic api
+
+	void add_module(input_module * module);
+	void remove_module(input_module * module);
 
 	//! Starts an xinput update cycle.
 	void begin_update();

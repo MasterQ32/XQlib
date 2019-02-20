@@ -1,0 +1,31 @@
+#ifndef XQLIB_DEBUG_CAMERA_HPP
+#define XQLIB_DEBUG_CAMERA_HPP
+
+#include <glm/glm.hpp>
+
+namespace xutility
+{
+	struct debug_camera
+	{
+		float fieldOfView = glm::radians(60.0f);
+		float pan = 0.0f;
+		float tilt = 0.0f;
+
+		float speed = 10.0;
+		float clip_near = 0.1f;
+		float clip_far  = 2500.0f;
+
+		glm::vec3 position = glm::vec3(0.0);
+
+		void look(float horizontal, float vertical);
+		void move(float forward, float sidewards);
+
+		glm::mat4 get_view_matrix() const;
+		glm::mat4 get_projection_matrix(float aspect) const;
+		glm::mat4 get_projection_matrix(float w, float h) const {
+			return get_projection_matrix(w / h);
+		}
+	};
+}
+
+#endif // DEBUG_CAMERA_HPP

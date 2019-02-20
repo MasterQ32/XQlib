@@ -88,8 +88,10 @@ namespace
 
 		xlog::log(src_name, log_level) << msg;
 
+#ifdef DEBUG
 		if(severity == GL_DEBUG_SEVERITY_HIGH)
 			abort();
+#endif
 	}
 }
 

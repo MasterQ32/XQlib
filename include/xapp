@@ -162,6 +162,11 @@ namespace xapp
 
 	//! Returns the total time since the application start in seconds.
 	float time();
+
+	//! Returns the screens aspect ratio
+	inline float aspect() {
+		return float(width()) / float(height());
+	}
 }
 
 

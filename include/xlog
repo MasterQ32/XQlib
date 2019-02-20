@@ -19,6 +19,8 @@ namespace xlog
 
 	void enable_colors(bool enabled);
 
+	void abort_on_critical(bool enabled);
+
 	struct log
 	{
 	private:
