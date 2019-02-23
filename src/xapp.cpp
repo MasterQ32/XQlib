@@ -9,6 +9,7 @@
 #include <map>
 #include <list>
 #include <chrono>
+#include <xcept>
 
 using std::chrono::high_resolution_clock;
 
@@ -90,7 +91,7 @@ namespace
 
 #ifdef DEBUG
 		if(severity == GL_DEBUG_SEVERITY_HIGH)
-			abort();
+			throw xcept::opengl_error(msg);
 #endif
 	}
 }

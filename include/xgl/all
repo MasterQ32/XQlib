@@ -2,6 +2,7 @@
 #define XGL_HPP
 
 #include "texture"
+#include "query"
 #include "buffer"
 #include "vertexarray"
 #include "shader"

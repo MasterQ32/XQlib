@@ -1,0 +1,104 @@
+#ifndef XQLIB_XGL_QUERY_HPP
+#define XQLIB_XGL_QUERY_HPP
+
+#include <GL/gl3w.h>
+#include <utility>
+#include <gsl/gsl>
+
+namespace xgl
+{
+	template<GLenum _type>
+	struct query
+	{
+		GLenum static constexpr type = _type;
+		GLuint id;
+
+	public:
+		query() {
+			glCreateQueries(type, 1, &id);
+		}
+
+		query(query const &) = delete;
+
+		query(query && other) :
+		  id(other.id)
+		{
+			other.id = 0;
+		}
+
+		~query()
+		{
+			if(id != 0)
+				glDeleteQueries(1, &id);
+		}
+
+		query & operator= (query &&) = default;
+	public:
+
+		void begin()
+		{
+			glBeginQuery(type, id);
+		}
+
+		void end()
+		{
+			glEndQuery(type);
+		}
+
+		bool result_available() const
+		{
+			GLint result = GL_FALSE;
+			glGetQueryObjectiv(id, GL_QUERY_RESULT_AVAILABLE, &result);
+			return (result == GL_TRUE);
+		}
+
+		template<typename T = GLint>
+		T result() const
+		{
+			static_assert(std::is_integral_v<T>);
+			static_assert((sizeof(T) == 4) or (sizeof(T) == 8));
+			T result;
+			if constexpr(std::is_same_v<T, GLint>)
+				glGetQueryObjectiv(id, GL_QUERY_RESULT, &result);
+			else if constexpr(std::is_same_v<T, GLint64>)
+				glGetQueryObjecti64v(id, GL_QUERY_RESULT, &result);
+			else if constexpr(std::is_same_v<T, GLuint>)
+				glGetQueryObjectuiv(id, GL_QUERY_RESULT, &result);
+			else
+				glGetQueryObjectui64v(id, GL_QUERY_RESULT, &result);
+			return result;
+		}
+
+		void query_counter()
+		{
+			if constexpr(type == GL_TIMESTAMP)
+				glQueryCounter(id, GL_TIMESTAMP);
+			else
+				assert(false and "not supported for non GL_TIMESTAMP queries!");
+		}
+
+	public:
+		operator GLuint () const {
+			return id;
+		}
+
+		operator bool() const {
+			return (id != 0);
+		}
+	};
+
+	static_assert(std::is_move_constructible_v<query<0>>);
+	static_assert(std::is_move_assignable_v<query<0>>);
+
+	using samples_passed_query = query<GL_SAMPLES_PASSED>;
+
+	template<bool conservative = false>
+	using any_samples_passed_query = query<conservative ? GL_ANY_SAMPLES_PASSED_CONSERVATIVE : GL_ANY_SAMPLES_PASSED>;
+
+	using primitives_generated_query = query<GL_PRIMITIVES_GENERATED>;
+	using transform_feedback_primitives_written_query = query<GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN>;
+	using time_elapsed_query = query<GL_TIME_ELAPSED>;
+	using timestamp_query = query<GL_TIMESTAMP>;
+}
+
+#endif // QUERY_HPP

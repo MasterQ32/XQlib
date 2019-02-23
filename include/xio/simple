@@ -3,14 +3,32 @@
 
 #include <filesystem>
 #include <vector>
+#include <xcept>
 
 namespace xio
 {
 	std::string load_string(std::filesystem::path const & path);
 	std::vector<std::byte> load_raw(std::filesystem::path const & path);
 
+	template<typename T>
+	T load_struct(std::filesystem::path const & path)
+	{
+		static_assert(not std::is_pointer_v<T>, "T must not be a pointer type!");
+		auto src = load_raw(path);
+		if(src.size() != sizeof(T))
+			throw xcept::io_error("Invalid file size!");
+		return *reinterpret_cast<T*>(src.data());
+	}
+
 	void save_string(std::filesystem::path const & path, std::string const & value);
 	void save_raw(std::filesystem::path const & path, std::byte const * value, size_t length);
+
+	template<typename T>
+	void save_struct(std::filesystem::path const & path, T const & value)
+	{
+		static_assert(not std::is_pointer_v<T>, "T must not be a pointer type!");
+		save_raw(path, reinterpret_cast<std::byte const *>(&value), sizeof value);
+	}
 }
 
 #endif // XQLIB_XIO_SIMPLE_HPP

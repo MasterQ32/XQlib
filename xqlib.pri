@@ -101,7 +101,9 @@ HEADERS += \
     $$PWD/include/xstd/fixed_string \
     $$PWD/include/xstd/fixed \
     $$PWD/include/xstd/type_traits/integer \
-    $$PWD/include/xutility/debug_camera
+    $$PWD/include/xutility/debug_camera \
+    $$PWD/include/xgraphics/shader_preprocessor \
+    $$PWD/include/xgl/query
 
 !contains(CONFIG,xqlib_extern):{
 		message("include xqlib source")
@@ -128,4 +130,5 @@ HEADERS += \
 SOURCES += $$PWD/src/zstd.cpp \
     $$PWD/src/xstd_format.cpp \
     $$PWD/src/xstd_fixed.cpp \
-    $$PWD/src/debug_camera.cpp
+    $$PWD/src/debug_camera.cpp \
+    $$PWD/src/shader_preprocessor.cpp

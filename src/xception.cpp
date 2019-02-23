@@ -18,3 +18,7 @@ XCEPTION(invalid_operation)
 XCEPTION(io_error)
 XCEPTION(db_error)
 XCEPTION(end_of_stream)
+
+XCEPTION(critical_log)
+XCEPTION(compile_error)
+XCEPTION(opengl_error)

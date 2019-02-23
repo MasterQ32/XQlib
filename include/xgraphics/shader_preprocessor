@@ -1,0 +1,23 @@
+#ifndef XQLIB_SHADER_PREPROCESSOR_HPP
+#define XQLIB_SHADER_PREPROCESSOR_HPP
+
+#include <map>
+#include <set>
+#include <string>
+
+namespace xgraphics
+{
+	struct shader_preprocessor
+	{
+		std::map<std::string, std::string> include_files;
+		std::set<std::string> defines;
+
+		void add_include(std::string const & name, std::string const & src);
+
+		void add_define(std::string const & define);
+
+		std::string preprocess(std::string const & src, std::string const & chunk_name = "") const;
+	};
+}
+
+#endif // SHADER_PREPROCESSOR_HPP
