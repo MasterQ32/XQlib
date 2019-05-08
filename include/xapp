@@ -163,6 +163,10 @@ namespace xapp
 	//! Returns the total time since the application start in seconds.
 	float time();
 
+	//! Returns the number of frames per second.
+	//! Has a hard-cap to to 1000 FPS
+	float fps(bool smoothed = true);
+
 	//! Returns the screens aspect ratio
 	inline float aspect() {
 		return float(width()) / float(height());

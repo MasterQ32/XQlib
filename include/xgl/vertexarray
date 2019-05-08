@@ -53,6 +53,15 @@ namespace xgl
 				reloffset);
 		}
 
+		void attributeIntFormat(unsigned int index, int size, GLenum format, GLuint reloffset) {
+			glVertexArrayAttribIFormat(
+				id,
+				index,
+				size,
+				format,
+				reloffset);
+		}
+
 		void bindAttribute(unsigned int attribute, unsigned int binding) {
 			glVertexArrayAttribBinding(id, attribute, binding);
 		}

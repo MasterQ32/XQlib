@@ -456,6 +456,13 @@ float xapp::dt()
 	return float(ms * double(std::micro::num) / double(std::micro::den));
 }
 
+float xapp::fps(bool smooth)
+{
+	float const current = (1.0f / std::max(dt(), 0.001f));
+	static float smoothed = 0.0f;
+	smoothed = glm::mix(current, smoothed, 0.1f); // smooth out a bit
+	return smooth ? smoothed : current;
+}
 
 float xapp::time()
 {

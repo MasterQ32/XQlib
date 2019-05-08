@@ -1,0 +1,28 @@
+#ifndef XQLIB_GLM_HPP
+#define XQLIB_GLM_HPP
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+
+#include <ostream>
+
+namespace glm
+{
+	// Make glm::vec<…> loggable!
+	template<typename TChar, typename TComponent, glm::length_t Length, glm::precision Precision>
+	inline std::basic_ostream<TChar> & operator<< (std::basic_ostream<TChar> & stream, glm::vec<Length, TComponent, Precision> const & vec)
+	{
+		stream << "(";
+		for(size_t i = 0; i < Length; i++)
+		{
+			if(i > 0)
+				stream << ", ";
+			stream << vec[glm::length_t(i)];
+		}
+		stream << ")";
+		return stream;
+	}
+}
+
+#endif // GLM_HPP
