@@ -1,0 +1,102 @@
+#ifndef XQLIB_ODE_HPP
+#define XQLIB_ODE_HPP
+
+#include <ode/ode.h>
+#include <type_traits>
+#include <xstd/resource>
+#include <array>
+
+#include "glm"
+
+namespace ode
+{
+#if defined(dSINGLE) and !defined(dDOUBLE)
+	bool constexpr is_single_precision = true;
+	bool constexpr is_double_precision = false;
+#elif !defined(dSINGLE) and defined(dDOUBLE)
+	bool constexpr is_single_precision = false;
+	bool constexpr is_double_precision = true;
+#else
+#error Either dSINGLE or dDOUBLE must be defined, but not both!
+#endif
+
+	using world       = xstd::resource<std::remove_pointer_t<dWorldID>, dWorldDestroy>;
+	using body        = xstd::resource<std::remove_pointer_t<dBodyID>, dBodyDestroy>;
+	using space       = xstd::resource<std::remove_pointer_t<dSpaceID>, dSpaceDestroy>;
+	using geom        = xstd::resource<std::remove_pointer_t<dGeomID>, dGeomDestroy>;
+	using joint       = xstd::resource<std::remove_pointer_t<dJointID>, dJointDestroy>;
+	using joint_group = xstd::resource<std::remove_pointer_t<dJointGroupID>, dJointGroupDestroy>;
+
+	struct vec3 : std::array<dReal, 4>
+	{
+		vec3() = default;
+		vec3(glm::vec3 const & src) :
+		  std::array<dReal, 4>({ dReal(src.x), dReal(src.y), dReal(src.z), 0.0 })
+		{
+
+		}
+
+		dReal x() const { return (*this)[0]; }
+		dReal y() const { return (*this)[1]; }
+		dReal z() const { return (*this)[2]; }
+
+		operator glm::vec3() const {
+			using type = glm::vec3::value_type;
+			return glm::vec3 {
+				type(x()),
+				type(y()),
+				type(z()),
+			};
+		}
+	};
+
+	struct vec4 : std::array<dReal, 4>
+	{
+		vec4() = default;
+		vec4(glm::vec4 const & src) :
+		  std::array<dReal, 4>({ dReal(src.x), dReal(src.y), dReal(src.z), dReal(src.z) })
+		{
+
+		}
+
+		dReal x() const { return (*this)[0]; }
+		dReal y() const { return (*this)[1]; }
+		dReal z() const { return (*this)[2]; }
+		dReal w() const { return (*this)[3]; }
+
+		operator glm::vec4() const {
+			using type = glm::vec4::value_type;
+			return glm::vec4 {
+				type(x()),
+				type(y()),
+				type(z()),
+				type(w()),
+			};
+		}
+	};
+
+	struct quat : std::array<dReal, 4>
+	{
+		quat() :
+		  quat(glm::identity<glm::quat>())
+		{
+		}
+
+		quat(glm::quat const & src) :
+			std::array<dReal, 4>({dReal(src.w), dReal(src.x), dReal(src.y), dReal(src.z)})
+		{
+		}
+
+		operator glm::quat() const {
+			using type = glm::quat::value_type;
+			return glm::quat(type(w()), type(x()), type(y()), type(z()));
+		}
+
+		dReal w() const { return (*this)[0]; }
+		dReal x() const { return (*this)[1]; }
+		dReal y() const { return (*this)[2]; }
+		dReal z() const { return (*this)[3]; }
+	};
+}
+
+#endif // ODE_HPP

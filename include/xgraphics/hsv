@@ -23,7 +23,7 @@ namespace xgraphics
 	};
 
 	//http://gamedev.stackexchange.com/questions/59797/glsl-shader-change-hue-saturation-brightness
-	hsva inline GLM_CONSTEXPR rgb2hsv(glm::vec4 c)
+	hsva inline rgb2hsv(glm::vec4 c)
 	{
 		using namespace glm;
 		vec4 K = vec4(0.0f, -1.0f / 3.0f, 2.0f / 3.0f, -1.0f);
@@ -35,17 +35,17 @@ namespace xgraphics
 		return hsva(abs(q.z + (q.w - q.y) / (6.0f * d + e)), d / (q.x + e), q.x, c.a);
 	}
 
-	hsv inline GLM_CONSTEXPR rgb2hsv(glm::vec3 c)
+	hsv inline rgb2hsv(glm::vec3 c)
 	{
 		return rgb2hsv(glm::vec4(c, 1.0f));
 	}
 
-	hsv inline GLM_CONSTEXPR rgb2hsv(float r, float g, float b)
+	hsv inline rgb2hsv(float r, float g, float b)
 	{
 		return rgb2hsv(glm::vec4(r,g,b, 1.0f));
 	}
 
-	glm::vec4 inline GLM_CONSTEXPR hsv2rgb(hsva c)
+	glm::vec4 inline hsv2rgb(hsva c)
 	{
 		using namespace glm;
 		vec4 K = vec4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
@@ -53,12 +53,12 @@ namespace xgraphics
 		return vec4(c.v * mix(vec3(K.x), clamp(p - vec3(K.x), 0.0f, 1.0f), c.s), c.a);
 	}
 
-	glm::vec3 inline GLM_CONSTEXPR hsv2rgb(hsv c)
+	glm::vec3 inline hsv2rgb(hsv c)
 	{
 		return hsv2rgb(hsva(c.h, c.s, c.v, 1.0f));
 	}
 
-	glm::vec3 inline GLM_CONSTEXPR hsv2rgb(float h, float s, float v)
+	glm::vec3 inline hsv2rgb(float h, float s, float v)
 	{
 		return hsv2rgb(hsva(h, s, v, 1.0f));
 	}

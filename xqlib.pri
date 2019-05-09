@@ -49,6 +49,7 @@ DEPENDPATH  += $$PWD/include
 
 HEADERS += \
 	$$PWD/include/glm \
+	$$PWD/include/ode \
 	$$PWD/include/xm/2d/line \
 	$$PWD/include/xm/2d/circle \
 	$$PWD/include/xm/2d/ray \
