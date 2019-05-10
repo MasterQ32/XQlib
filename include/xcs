@@ -243,7 +243,7 @@ namespace xcs
 	template<typename Component>
 	struct meta_component : meta_component_base
 	{
-		explicit meta_component(std::string const & name) : meta_component_base(name) { }
+		explicit meta_component(std::string const & _name) : meta_component_base(_name) { }
 		~meta_component() noexcept override = default;
 
 		std::unique_ptr<component_store_base> create_store(universe & universe) const override

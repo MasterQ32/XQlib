@@ -32,12 +32,17 @@ void debug_camera::move(float forward, float sidewards)
 	position += sidewards * right_dir;
 }
 
+glm::vec3 debug_camera::get_view_direction() const
+{
+	return get_rotation(*this) * glm::vec3(0, 0, -1);
+}
+
 glm::mat4 debug_camera::get_view_matrix() const
 {
 	auto const rotation = get_rotation(*this);
 	return glm::lookAt(
 		position,
-		position + rotation * glm::vec3(0, 0, -1),
+		position + get_view_direction(),
 		rotation * glm::vec3(0, 1, 0));
 }
 

@@ -26,6 +26,7 @@ namespace ode
 	using geom        = xstd::resource<std::remove_pointer_t<dGeomID>, dGeomDestroy>;
 	using joint       = xstd::resource<std::remove_pointer_t<dJointID>, dJointDestroy>;
 	using joint_group = xstd::resource<std::remove_pointer_t<dJointGroupID>, dJointGroupDestroy>;
+	using trimesh     = xstd::resource<std::remove_pointer_t<dTriMeshDataID>, dGeomTriMeshDataDestroy>;
 
 	struct vec3 : std::array<dReal, 4>
 	{
@@ -47,6 +48,14 @@ namespace ode
 				type(y()),
 				type(z()),
 			};
+		}
+
+		operator dReal * () {
+			return this->data();
+		}
+
+		operator dReal const * () const {
+			return this->data();
 		}
 	};
 
@@ -73,6 +82,14 @@ namespace ode
 				type(w()),
 			};
 		}
+
+		operator dReal * () {
+			return this->data();
+		}
+
+		operator dReal const * () const {
+			return this->data();
+		}
 	};
 
 	struct quat : std::array<dReal, 4>
@@ -96,6 +113,14 @@ namespace ode
 		dReal x() const { return (*this)[1]; }
 		dReal y() const { return (*this)[2]; }
 		dReal z() const { return (*this)[3]; }
+
+		operator dReal * () {
+			return this->data();
+		}
+
+		operator dReal const * () const {
+			return this->data();
+		}
 	};
 }
 
