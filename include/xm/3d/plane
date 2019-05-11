@@ -14,6 +14,10 @@ namespace xm3d
 		glm::vec3 normal() const {
 			return glm::cross(bitangent, tangent);
 		}
+
+		float distance(glm::vec3 const & pos) const {
+			return dot(pos - origin, normal());
+		}
 	};
 }
 

@@ -87,6 +87,10 @@ static void ImGui_ImplSDL2_SetClipboardText(void*, const char* text)
 // If you have multiple SDL events and some of them are not meant to be used by dear imgui, you may need to filter events based on their windowID field.
 bool ImGui_ImplSDL2_ProcessEvent(SDL_Event const & event)
 {
+	// Don't allow UI in relative mouse mode!
+	if(SDL_GetRelativeMouseMode())
+		return false;
+
     ImGuiIO& io = ImGui::GetIO();
     switch (event.type)
     {
@@ -284,6 +288,11 @@ void ImGui_ImplSDL2_NewFrame(SDL_Window* window)
     io.DeltaTime = g_Time > 0 ? (float)((double)(current_time - g_Time) / frequency) : (float)(1.0f / 60.0f);
     g_Time = current_time;
 
-    ImGui_ImplSDL2_UpdateMousePosAndButtons();
-    ImGui_ImplSDL2_UpdateMouseCursor();
+
+		// Don't allow UI in relative mouse mode!
+		if(not SDL_GetRelativeMouseMode())
+		{
+			ImGui_ImplSDL2_UpdateMousePosAndButtons();
+			ImGui_ImplSDL2_UpdateMouseCursor();
+		}
 }

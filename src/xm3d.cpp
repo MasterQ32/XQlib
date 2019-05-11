@@ -1,6 +1,8 @@
 #include "../include/xm/3d/aabb"
 #include "../include/xm/3d/plane"
 #include "../include/xm/3d/ray"
+#include "../include/xm/3d/sphere"
+#include "../include/xm/3d/frustrum"
 #include "../include/xm/3d/intersect"
 
 xstd::optional<xm3d::ray_box_hit> xm3d::intersect(aabb const & box, ray const & ray)
@@ -35,4 +37,128 @@ xstd::optional<float> xm3d::intersect(xm3d::plane const & plane, xm3d::ray const
 		return xstd::nullopt;
 	auto const p0l0 = plane.origin - ray.origin;
 	return dot(p0l0, plane.normal()) / denom;
+}
+
+
+
+
+
+
+
+xm3d::frustrum::frustrum(const glm::mat4 & matrix)
+{
+	std::array<glm::vec4, 8> points =
+	{
+	  glm::vec4 { -1, -1,  0, 1 }, // left, bottom, near
+	  glm::vec4 { -1, -1,  1, 1 }, // left, bottom, far
+	  glm::vec4 { -1,  1,  0, 1 }, // left, top, near
+	  glm::vec4 { -1,  1,  1, 1 }, // left, top, far
+	  glm::vec4 {  1, -1,  0, 1 }, // right, bottom, near
+	  glm::vec4 {  1, -1,  1, 1 }, // right, bottom, far
+	  glm::vec4 {  1,  1,  0, 1 }, // right, top, near
+	  glm::vec4 {  1,  1,  1, 1 }, // right, top, far
+	};
+
+	auto const invmat = glm::inverse(matrix);
+	for(auto & pt : points)
+	{
+		pt = invmat * pt;
+		pt /= pt.w;
+		assert(glm::abs(pt.w - 1.0f) <= 0.01f);
+	}
+
+	auto const construct_plane = [&](size_t const (&indices)[4], bool flip) -> plane
+	{
+		auto const p0 = glm::vec3(points[indices[0]]);
+		auto const p1 = glm::vec3(points[indices[1]]);
+		auto const p2 = glm::vec3(points[indices[2]]);
+		auto const p3 = glm::vec3(points[indices[3]]);
+
+		plane p;
+		p.origin = 0.25f * (p0 + p1 + p2 + p3);
+		p.tangent = normalize(p0 - p.origin);
+		p.bitangent = normalize(p1 - p.origin);
+		if(glm::abs(dot(p.tangent, p.bitangent)) > 0.8f)
+		   p.bitangent = normalize(p2 - p.origin);
+
+		if(flip)
+			p.tangent *= -1.0f;
+
+		return p;
+	};
+
+	planes[top] = construct_plane({2, 3, 6, 7}, true);
+	planes[bottom] = construct_plane({0, 1, 4, 5}, false);
+	planes[left] = construct_plane({0, 1, 2, 3}, true);
+	planes[right] = construct_plane({4, 5, 6, 7}, false);
+	planes[near] = construct_plane({0, 2, 4, 6}, true);
+	planes[far] = construct_plane({1, 3, 5, 7}, false);
+}
+
+xm3d::frustrum::state xm3d::frustrum::test(const glm::vec3 & pos) const
+{
+	for(auto const & plane : planes)
+	{
+		auto const p = pos - plane.origin;
+		if(dot(p, plane.normal()) < 0)
+			return outside;
+	}
+	return fully_inside;
+}
+
+xm3d::frustrum::state xm3d::frustrum::test(const xm3d::sphere & sphere) const
+{
+	assert(false and "fix this");
+	/*
+	bool all_inside = true;
+	bool all_outside = true;
+	for(auto const & plane : planes)
+	{
+		auto const p = sphere.center - plane.origin;
+		if(auto dist = dot(p, plane.normal()); dist < sphere.radius)
+			return outside;
+			return (dist >= sphere.radius) ? fully_inside : partially_inside;
+	}
+	return all_inside ? fully_inside : partially_inside;
+	*/
+	/*
+	 *
+	using namespace glm;
+
+	var threshold = -radius;
+
+	for(int i = 0; i < 6; i++)
+	{
+		float dist = frustrum.planes[i].distance(position);
+		if(dist < threshold)
+			return true;
+	}
+	return false;
+	*/
+}
+
+xm3d::frustrum::state xm3d::frustrum::test(const xm3d::aabb & box) const
+{
+	bool all_inside = true;
+	bool all_outside = true;
+	for(auto const & plane : planes)
+	{
+		for(size_t i = 0; i < 8; i++)
+		{
+			auto const p = box.min
+				+ glm::vec3(!!(i & 4), !!(i & 2), !!(i & 1)) * (box.max - box.min)
+			  - plane.origin
+				;
+			if(dot(p, plane.normal()) > 0)
+				all_outside = false;
+			else
+				all_inside = false;
+		}
+		if(all_outside)
+			return outside;
+	}
+	if(not all_inside and not all_outside)
+		return partially_inside;
+	else
+		return fully_inside;
 }

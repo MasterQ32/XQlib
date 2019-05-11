@@ -1,0 +1,31 @@
+#ifndef XQLIB_XM3D_FRUSTRUM_HPP
+#define XQLIB_XM3D_FRUSTRUM_HPP
+
+#include "aabb"
+#include "plane"
+#include "sphere"
+
+#include <glm/glm.hpp>
+#include <array>
+
+namespace xm3d
+{
+	struct frustrum
+	{
+		enum state { outside = 0, partially_inside = 1, fully_inside = 2 };
+		enum side { top = 0, bottom = 1, left = 2, right = 3, near = 4, far = 5 };
+
+		std::array<plane, 6> planes;
+
+		explicit frustrum(glm::mat4 const & matrix);
+
+		state test(glm::vec3 const & pos) const;
+
+		state test(sphere const & sphere) const;
+
+		state test(aabb const & box) const;
+	};
+
+}
+
+#endif // FRUSTRUM_HPP

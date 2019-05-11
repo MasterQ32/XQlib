@@ -1,0 +1,15 @@
+#ifndef XQLIB_XM3D_SPHERE_HPP
+#define XQLIB_XM3D_SPHERE_HPP
+
+#include <glm/glm.hpp>
+
+namespace xm3d
+{
+	struct sphere
+	{
+		glm::vec3 center;
+		float radius;
+	};
+}
+
+#endif // SPHERE_HPP

@@ -10,6 +10,14 @@ namespace xm3d
 		glm::vec3 min;
 		glm::vec3 max;
 
+		glm::vec3 center() const { return 0.5f * (max + min); }
+
+		//! returns the distance to each box wall from the center
+		glm::vec3 extends() const { return 0.5f * (max - min); }
+
+		//! returns the distance between each side
+		glm::vec3 size() const { return (max - min); }
+
 		bool contains(glm::vec3 pt) const
 		{
 			return (pt.x >= min.x)
