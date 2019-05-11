@@ -2,7 +2,7 @@
 #include "../include/xm/3d/plane"
 #include "../include/xm/3d/ray"
 #include "../include/xm/3d/sphere"
-#include "../include/xm/3d/frustrum"
+#include "../include/xm/3d/frustum"
 #include "../include/xm/3d/intersect"
 
 xstd::optional<xm3d::ray_box_hit> xm3d::intersect(aabb const & box, ray const & ray)
@@ -45,7 +45,7 @@ xstd::optional<float> xm3d::intersect(xm3d::plane const & plane, xm3d::ray const
 
 
 
-xm3d::frustrum::frustrum(const glm::mat4 & matrix)
+xm3d::frustum::frustum(const glm::mat4 & matrix)
 {
 	std::array<glm::vec4, 8> points =
 	{
@@ -95,7 +95,7 @@ xm3d::frustrum::frustrum(const glm::mat4 & matrix)
 	planes[far] = construct_plane({1, 3, 5, 7}, false);
 }
 
-xm3d::frustrum::state xm3d::frustrum::test(const glm::vec3 & pos) const
+xm3d::frustum::state xm3d::frustum::test(const glm::vec3 & pos) const
 {
 	for(auto const & plane : planes)
 	{
@@ -106,7 +106,7 @@ xm3d::frustrum::state xm3d::frustrum::test(const glm::vec3 & pos) const
 	return fully_inside;
 }
 
-xm3d::frustrum::state xm3d::frustrum::test(const xm3d::sphere & sphere) const
+xm3d::frustum::state xm3d::frustum::test(const xm3d::sphere & sphere) const
 {
 	assert(false and "fix this");
 	/*
@@ -137,12 +137,13 @@ xm3d::frustrum::state xm3d::frustrum::test(const xm3d::sphere & sphere) const
 	*/
 }
 
-xm3d::frustrum::state xm3d::frustrum::test(const xm3d::aabb & box) const
+xm3d::frustum::state xm3d::frustum::test(const xm3d::aabb & box) const
 {
-	bool all_inside = true;
-	bool all_outside = true;
+	state st = fully_inside;
 	for(auto const & plane : planes)
 	{
+		bool all_inside = true;
+		bool all_outside = true;
 		for(size_t i = 0; i < 8; i++)
 		{
 			auto const p = box.min
@@ -156,9 +157,8 @@ xm3d::frustrum::state xm3d::frustrum::test(const xm3d::aabb & box) const
 		}
 		if(all_outside)
 			return outside;
+		if(not all_inside)
+			st = partially_inside;
 	}
-	if(not all_inside and not all_outside)
-		return partially_inside;
-	else
-		return fully_inside;
+	return st;
 }

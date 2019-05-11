@@ -70,7 +70,7 @@ HEADERS += \
 	$$PWD/include/xinput/sdl \
 	$$PWD/include/xcept \
 	$$PWD/include/xgraphics/shader_compiler \
-	$$PWD/include/xm/3d/frustrum \
+	$$PWD/include/xm/3d/frustum \
 	$$PWD/include/xm/3d/sphere \
 	$$PWD/include/xnet/http/client \
 	$$PWD/include/xnet/socket \
