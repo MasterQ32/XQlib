@@ -15,6 +15,7 @@ namespace xgraphics
 		{
 			glm::vec2 pos;
 			glm::vec2 uv;
+			glm::vec4 tint;
 		};
 
 		struct range
@@ -41,6 +42,7 @@ namespace xgraphics
 		    glm::vec2 const & size,
 		    float rotation            = 0.0f,
 		    glm::vec2 const & center  = glm::vec2(0, 0),
+				glm::vec4 const & tint    = glm::vec4(1,1,1,1),
 		    glm::vec2 const & uv_low  = glm::vec2(0, 0),
 		    glm::vec2 const & uv_high = glm::vec2(1, 1));
 

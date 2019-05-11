@@ -9,26 +9,31 @@ namespace
 		R"glsl(#version 330
 	    layout(location = 0) in vec2 vPos;
 	    layout(location = 1) in vec2 vUV;
+	    layout(location = 2) in vec4 vTint;
 
 	    uniform mat4 uTransform;
 
 			out vec2 uv;
+	    out vec4 tint;
+
 			void main()
 			{
 				uv = vUV;
+				tint = vTint;
 				gl_Position = uTransform * vec4(vPos,0,1);
 			}
 		)glsl";
 	char const * fragment_shader =
 		R"glsl(#version 330
 			in vec2 uv;
+			in vec4 tint;
 			out vec4 fragment;
 
 			uniform sampler2D uTexture;
 
 			void main()
 			{
-				fragment = texture(uTexture, uv);
+				fragment = tint *texture(uTexture, uv);
 			}
 		)glsl";
 }
@@ -54,12 +59,15 @@ xgraphics::sprite_batch::sprite_batch() :
 
 	vao.enableAttribute(0);
 	vao.enableAttribute(1);
+	vao.enableAttribute(2);
 
 	vao.attributeFormat(0, 2, GL_FLOAT, offsetof(vertex, pos));
 	vao.attributeFormat(1, 2, GL_FLOAT, offsetof(vertex, uv));
+	vao.attributeFormat(2, 4, GL_FLOAT, offsetof(vertex, tint));
 
 	vao.bindAttribute(0, 0);
 	vao.bindAttribute(1, 0);
+	vao.bindAttribute(2, 0);
 
 	vao.vertexBuffer(0, vertex_buffer, 0, sizeof(vertex));
 }
@@ -77,6 +85,7 @@ void xgraphics::sprite_batch::draw(
 	glm::vec2 const & size,
 	float rotation,
 	glm::vec2 const & center,
+	glm::vec4 const & tint,
 	glm::vec2 const & uv_low,
 	glm::vec2 const & uv_high)
 {
@@ -99,6 +108,7 @@ void xgraphics::sprite_batch::draw(
 		vertex vtx;
 		vtx.pos = position + vec2(pos) - center;
 		vtx.uv = uv_low + xy * (uv_high - uv_low);
+		vtx.tint = tint;
 
 		vertices.push_back(vtx);
 	}

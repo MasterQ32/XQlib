@@ -11,11 +11,11 @@
 
 namespace
 {
-	xstd::optional<xgl::texture2D> load(std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> && mem, int _w, int _h)
+	xstd::optional<xgl::texture2D> load(std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> && mem, int _w, int _h, char const * hint)
 	{
 		if(not mem)
 		{
-			xlog::log("texture_loader", xlog::error) << "could not load texture.";
+			xlog::log("texture_loader", xlog::error) << "could not load texture " << hint;
 			return xstd::nullopt;
 		}
 
@@ -44,7 +44,7 @@ xstd::optional<xgl::texture2D> xgraphics::load_texture(std::string const & file)
 		stbi_load(file.c_str(), &_w, &_h, nullptr, 4),
 		stbi_image_free
 	};
-	return load(std::move(mem), _w, _h);
+	return load(std::move(mem), _w, _h, file.c_str());
 }
 
 xstd::optional<xgl::texture2D> xgraphics::load_texture(std::byte const * buffer, std::size_t length)
@@ -54,5 +54,5 @@ xstd::optional<xgl::texture2D> xgraphics::load_texture(std::byte const * buffer,
 		stbi_load_from_memory(reinterpret_cast<stbi_uc const *>(buffer), gsl::narrow<int>(length), &_w, &_h, nullptr, 4),
 		stbi_image_free
 	};
-	return load(std::move(mem), _w, _h);
+	return load(std::move(mem), _w, _h, "<memory>");
 }
