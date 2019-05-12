@@ -59,7 +59,7 @@ namespace xgl
 				return xstd::nullopt;
 		}
 	public:
-		void use() {
+		void use() const {
 			glUseProgram(id);
 		}
 
@@ -84,11 +84,11 @@ namespace xgl
 			glDetachShader(id, sh.id);
 		}
 
-		GLint getUniformLocation(char const * name) {
+		GLint getUniformLocation(char const * name) const {
 			return getUniformLocation(std::string(name));
 		}
 
-		GLint getUniformLocation(std::string const & name) {
+		GLint getUniformLocation(std::string const & name) const {
 			auto it = uniformCache.find(name);
 			if(it == uniformCache.end()) {
 				auto loc = glGetUniformLocation(id, name.c_str());
