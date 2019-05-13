@@ -20,15 +20,23 @@ namespace ode
 #error Either dSINGLE or dDOUBLE must be defined, but not both!
 #endif
 
-	using world       = xstd::resource<std::remove_pointer_t<dWorldID>, dWorldDestroy>;
-	using body        = xstd::resource<std::remove_pointer_t<dBodyID>, dBodyDestroy>;
-	using space       = xstd::resource<std::remove_pointer_t<dSpaceID>, dSpaceDestroy>;
-	using geom        = xstd::resource<std::remove_pointer_t<dGeomID>, dGeomDestroy>;
-	using joint       = xstd::resource<std::remove_pointer_t<dJointID>, dJointDestroy>;
-	using joint_group = xstd::resource<std::remove_pointer_t<dJointGroupID>, dJointGroupDestroy>;
-	using trimesh     = xstd::resource<std::remove_pointer_t<dTriMeshDataID>, dGeomTriMeshDataDestroy>;
+	using world           = xstd::resource<std::remove_pointer_t<dWorldID>, dWorldDestroy>;
+	using body            = xstd::resource<std::remove_pointer_t<dBodyID>, dBodyDestroy>;
+	using space           = xstd::resource<std::remove_pointer_t<dSpaceID>, dSpaceDestroy>;
+	using geom            = xstd::resource<std::remove_pointer_t<dGeomID>, dGeomDestroy>;
+	using joint           = xstd::resource<std::remove_pointer_t<dJointID>, dJointDestroy>;
+	using joint_group     = xstd::resource<std::remove_pointer_t<dJointGroupID>, dJointGroupDestroy>;
+	using trimesh         = xstd::resource<std::remove_pointer_t<dTriMeshDataID>, dGeomTriMeshDataDestroy>;
 
-	struct vec3 : std::array<dReal, 4>
+	using world_ref       = dWorldID;
+	using body_ref        = dBodyID;
+	using space_ref       = dSpaceID;
+	using geom_ref        = dGeomID;
+	using joint_ref       = dJointID;
+	using joint_group_ref = dJointGroupID;
+	using trimesh_ref     = dTriMeshDataID;
+
+	struct alignas(dVector3) vec3 : std::array<dReal, 4>
 	{
 		vec3() = default;
 		vec3(glm::vec3 const & src) :
@@ -36,6 +44,12 @@ namespace ode
 		{
 
 		}
+
+		vec3(dReal const * vec) :
+		  std::array<dReal, 4> { vec[0], vec[1], vec[2], 0.0 }
+	{
+
+	}
 
 		dReal x() const { return (*this)[0]; }
 		dReal y() const { return (*this)[1]; }
@@ -59,7 +73,9 @@ namespace ode
 		}
 	};
 
-	struct vec4 : std::array<dReal, 4>
+	static_assert(sizeof(vec3) == sizeof(dVector3));
+
+	struct alignas(dVector4) vec4 : std::array<dReal, 4>
 	{
 		vec4() = default;
 		vec4(glm::vec4 const & src) :
@@ -92,7 +108,9 @@ namespace ode
 		}
 	};
 
-	struct quat : std::array<dReal, 4>
+	static_assert(sizeof(vec4) == sizeof(dVector4));
+
+	struct alignas(dQuaternion) quat : std::array<dReal, 4>
 	{
 		quat() :
 		  quat(glm::identity<glm::quat>())
@@ -122,6 +140,7 @@ namespace ode
 			return this->data();
 		}
 	};
+		static_assert(sizeof(quat) == sizeof(dQuaternion));
 }
 
 #endif // ODE_HPP

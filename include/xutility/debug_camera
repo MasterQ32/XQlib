@@ -21,6 +21,8 @@ namespace xutility
 		void move(float forward, float sidewards);
 
 		glm::vec3 get_view_direction() const;
+		glm::quat get_view_rotation() const;
+
 		glm::mat4 get_view_matrix() const;
 		glm::mat4 get_projection_matrix(float aspect) const;
 		glm::mat4 get_projection_matrix(float w, float h) const {
