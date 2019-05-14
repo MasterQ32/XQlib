@@ -24,6 +24,10 @@ namespace xm3d
 		state test(sphere const & sphere) const;
 
 		state test(aabb const & box) const;
+
+		state test(aabb const & box, glm::mat4 const & transform) const;
+
+		state test(glm::vec3 const * points, size_t count) const;
 	};
 
 }

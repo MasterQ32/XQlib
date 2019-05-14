@@ -23,6 +23,24 @@ namespace glm
 		stream << ")";
 		return stream;
 	}
+
+	template<typename T, glm::length_t N, glm::qualifier Q>
+	glm::vec<N, T, Q> component_min(glm::vec<N, T, Q> const & a, glm::vec<N, T, Q> const & b)
+	{
+		glm::vec<N, T, Q> result;
+		for(size_t i = 0; i < N; i++)
+			result[i] = glm::min(a[i], b[i]);
+		return result;
+	}
+
+	template<typename T, glm::length_t N, glm::qualifier Q>
+	glm::vec<N, T, Q> component_max(glm::vec<N, T, Q> const & a, glm::vec<N, T, Q> const & b)
+	{
+		glm::vec<N, T, Q> result;
+		for(size_t i = 0; i < N; i++)
+			result[i] = glm::max(a[i], b[i]);
+		return result;
+	}
 }
 
 #endif // GLM_HPP

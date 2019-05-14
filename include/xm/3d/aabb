@@ -18,6 +18,12 @@ namespace xm3d
 		//! returns the distance between each side
 		glm::vec3 size() const { return (max - min); }
 
+		//! returns one of the 8 corners of the bounding box.
+		glm::vec3 corner(size_t idx) const
+		{
+			return min + (max - min) * glm::vec3(!!(idx&4), !!(idx&2), !!(idx&1));
+		}
+
 		bool contains(glm::vec3 pt) const
 		{
 			return (pt.x >= min.x)

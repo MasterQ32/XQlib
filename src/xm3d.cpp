@@ -162,3 +162,42 @@ xm3d::frustum::state xm3d::frustum::test(const xm3d::aabb & box) const
 	}
 	return st;
 }
+
+xm3d::frustum::state xm3d::frustum::test(const xm3d::aabb & box, const glm::mat4 & transform) const
+{
+	glm::vec3 const positions[] =
+	{
+	  transform * glm::vec4 { box.corner(0), 1 },
+	  transform * glm::vec4 { box.corner(1), 1 },
+	  transform * glm::vec4 { box.corner(2), 1 },
+	  transform * glm::vec4 { box.corner(3), 1 },
+	  transform * glm::vec4 { box.corner(4), 1 },
+	  transform * glm::vec4 { box.corner(5), 1 },
+	  transform * glm::vec4 { box.corner(6), 1 },
+	  transform * glm::vec4 { box.corner(7), 1 },
+	};
+	return test(positions, 8);
+}
+
+xm3d::frustum::state xm3d::frustum::test(const glm::vec3 * points, size_t count) const
+{
+	state st = fully_inside;
+	for(auto const & plane : planes)
+	{
+		bool all_inside = true;
+		bool all_outside = true;
+		for(size_t i = 0; i < count; i++)
+		{
+			auto const p = points[i] - plane.origin;
+			if(dot(p, plane.normal()) > 0)
+				all_outside = false;
+			else
+				all_inside = false;
+		}
+		if(all_outside)
+			return outside;
+		if(not all_inside)
+			st = partially_inside;
+	}
+	return st;
+}
