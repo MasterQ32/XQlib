@@ -81,6 +81,7 @@ HEADERS += \
 	$$PWD/include/xio/istream \
 	$$PWD/include/xnet/socket_stream \
 	$$PWD/include/xio/iostream \
+	$$PWD/include/xstd/multi_array \
 	$$PWD/include/xstd/unique_id \
 	$$PWD/include/xstd/dynamic_array \
 	$$PWD/include/xgraphics/turtle_font.hpp \

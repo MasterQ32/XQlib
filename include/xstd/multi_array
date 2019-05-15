@@ -1,0 +1,32 @@
+#ifndef XQLIB_XSTD_MULTIARRAY_HPP
+#define XQLIB_XSTD_MULTIARRAY_HPP
+
+#include <array>
+
+namespace xstd
+{
+	namespace _detail
+	{
+		// terminator function for template recursion
+		template<typename T>
+		T constexpr multi_array();
+
+		template<typename T, std::size_t N, std::size_t ... Rest>
+		auto constexpr multi_array()
+		{
+			// use return type deduction with
+			// template function overloading to create a recursive "call"
+			// of multi_array() function which terminates with the
+			// `T multi_array()` call.
+			return std::array<decltype(multi_array<T, Rest...>()), N> { };
+		}
+	}
+
+	//! multi-dimensional array of arrays.
+	//! indexing happens in order of dimenions given, but is reversly stored
+	//! in memory.
+	template<typename T, std::size_t ... Dimensions>
+	using multi_array = decltype(_detail::multi_array<T, Dimensions...>());
+}
+
+#endif // MULTIARRAY_HPP

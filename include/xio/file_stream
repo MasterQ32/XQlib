@@ -10,7 +10,7 @@ namespace xio
 {
 	struct file_stream : iostream, seekable_stream
 	{
-		xstd::resource<FILE, fclose> handle;
+		xstd::resource<FILE*, fclose> handle;
 
 		explicit file_stream(char const * fileName, char const * mode);
 		explicit file_stream(std::string const & fileName, char const * mode) :

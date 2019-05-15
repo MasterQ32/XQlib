@@ -20,13 +20,13 @@ namespace ode
 #error Either dSINGLE or dDOUBLE must be defined, but not both!
 #endif
 
-	using world           = xstd::resource<std::remove_pointer_t<dWorldID>, dWorldDestroy>;
-	using body            = xstd::resource<std::remove_pointer_t<dBodyID>, dBodyDestroy>;
-	using space           = xstd::resource<std::remove_pointer_t<dSpaceID>, dSpaceDestroy>;
-	using geom            = xstd::resource<std::remove_pointer_t<dGeomID>, dGeomDestroy>;
-	using joint           = xstd::resource<std::remove_pointer_t<dJointID>, dJointDestroy>;
-	using joint_group     = xstd::resource<std::remove_pointer_t<dJointGroupID>, dJointGroupDestroy>;
-	using trimesh         = xstd::resource<std::remove_pointer_t<dTriMeshDataID>, dGeomTriMeshDataDestroy>;
+	using world           = xstd::resource<dWorldID, dWorldDestroy>;
+	using body            = xstd::resource<dBodyID, dBodyDestroy>;
+	using space           = xstd::resource<dSpaceID, dSpaceDestroy>;
+	using geom            = xstd::resource<dGeomID, dGeomDestroy>;
+	using joint           = xstd::resource<dJointID, dJointDestroy>;
+	using joint_group     = xstd::resource<dJointGroupID, dJointGroupDestroy>;
+	using trimesh         = xstd::resource<dTriMeshDataID, dGeomTriMeshDataDestroy>;
 
 	using world_ref       = dWorldID;
 	using body_ref        = dBodyID;
