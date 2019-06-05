@@ -25,22 +25,24 @@ QMAKE_LFLAGS   += $$WARNINGS
 include($$PWD/pri/c++17.pri)
 
 #include external modules
-contains(XQLIB, sdl2):     include($$PWD/pri/sdl2.pri)
-contains(XQLIB, gsl):      include($$PWD/pri/gsl.pri)
-contains(XQLIB, stb):      include($$PWD/pri/stb.pri)
-contains(XQLIB, gl3w):     include($$PWD/pri/gl3w.pri)
-contains(XQLIB, curl):     include($$PWD/pri/curl.pri)
-contains(XQLIB, enet):     include($$PWD/pri/enet.pri)
-contains(XQLIB, imgui):    include($$PWD/pri/imgui.pri)
-contains(XQLIB, optional): include($$PWD/pri/optional.pri)
-contains(XQLIB, json):     include($$PWD/pri/json.pri)
-contains(XQLIB, guid):     include($$PWD/pri/stduuid.pri)
-contains(XQLIB, sqlite3):  include($$PWD/pri/sqlite3.pri)
-contains(XQLIB, openssl):  include($$PWD/pri/openssl.pri)
-contains(XQLIB, lzma):     include($$PWD/pri/lzma.pri)
-contains(XQLIB, nfd):      include($$PWD/pri/nativefiledialog.pri)
-contains(XQLIB, zstd):     include($$PWD/pri/zstd.pri)
-contains(XQLIB, ode):      include($$PWD/pri/ode.pri)
+contains(XQLIB, sdl2):       include($$PWD/pri/sdl2.pri)
+contains(XQLIB, sdl2_image): include($$PWD/pri/sdl2_image.pri)
+contains(XQLIB, sdl2_ttf):   include($$PWD/pri/sdl2_ttf.pri)
+contains(XQLIB, gsl):        include($$PWD/pri/gsl.pri)
+contains(XQLIB, stb):        include($$PWD/pri/stb.pri)
+contains(XQLIB, gl3w):       include($$PWD/pri/gl3w.pri)
+contains(XQLIB, curl):       include($$PWD/pri/curl.pri)
+contains(XQLIB, enet):       include($$PWD/pri/enet.pri)
+contains(XQLIB, imgui):      include($$PWD/pri/imgui.pri)
+contains(XQLIB, optional):   include($$PWD/pri/optional.pri)
+contains(XQLIB, json):       include($$PWD/pri/json.pri)
+contains(XQLIB, guid):       include($$PWD/pri/stduuid.pri)
+contains(XQLIB, sqlite3):    include($$PWD/pri/sqlite3.pri)
+contains(XQLIB, openssl):    include($$PWD/pri/openssl.pri)
+contains(XQLIB, lzma):       include($$PWD/pri/lzma.pri)
+contains(XQLIB, nfd):        include($$PWD/pri/nativefiledialog.pri)
+contains(XQLIB, zstd):       include($$PWD/pri/zstd.pri)
+contains(XQLIB, ode):        include($$PWD/pri/ode.pri)
 
 DEFINES += XGL_ENABLE_GLM
 
@@ -115,7 +117,8 @@ HEADERS += \
 	$$PWD/include/xstd/type_traits/integer \
 	$$PWD/include/xutility/debug_camera \
 	$$PWD/include/xgraphics/shader_preprocessor \
-	$$PWD/include/xgl/query
+    $$PWD/include/xgl/query \
+    $$PWD/include/xgraphics/color_literals
 
 !contains(XQLIB,reference_extern): {
 	message("include xqlib source")

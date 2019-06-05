@@ -225,7 +225,20 @@ bool xapp::init(xapp::mode mode, options const & opt)
 		}
 		case xapp::sdl:
 		{
-			abort();
+			Uint32 flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
+			if(opt.enable_vsync)
+				flags |= SDL_RENDERER_PRESENTVSYNC;
+			xapp::renderer = SDL_CreateRenderer(
+				xapp::window,
+				-1,
+				flags);
+			if(xapp::renderer == nullptr)
+			{
+				appError() << SDL_GetError();
+				SDL_DestroyWindow(xapp::window);
+				xapp::window = nullptr;
+				return false;
+			}
 		}
 	}
 

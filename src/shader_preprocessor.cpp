@@ -47,10 +47,10 @@ std::string shader_preprocessor::preprocess(std::string const & src, std::string
 		if(i >= start_of_line)
 		{
 			auto const line = src.substr(start_of_line, i - start_of_line);
-			auto offset = line.find('#');
+			auto const offset = line.find('#');
 			if(offset != line.npos)
 			{
-				if(not std::all_of(line.begin(), line.begin() + offset, isspace))
+				if(not std::all_of(line.begin(), line.begin() + ssize_t(offset), isspace))
 					throw xcept::compile_error("# must only be preceeded by spaces!");
 				auto const directive = line.substr(offset);
 				if(directive == "#pragma once")

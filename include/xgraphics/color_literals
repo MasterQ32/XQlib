@@ -1,0 +1,59 @@
+#ifndef XQLIB_COLOR_LITERALS_HPP
+#define XQLIB_COLOR_LITERALS_HPP
+
+#include <glm/glm.hpp>
+
+namespace xgraphics
+{
+	namespace internal
+	{
+		constexpr int hex2int(char c)
+		{
+			if((c >= '0') and (c <= '9'))
+				return c - '0';
+			else if((c >= 'A') and (c <= 'F'))
+				return c + 10 - 'A';
+			else if((c >= 'a') and (c <= 'f'))
+				return c + 10 - 'a';
+			else
+				return -1;
+		}
+
+		constexpr float hex2flt(char c)
+		{
+			return hex2int(c) / 15.0f;
+		}
+
+		constexpr float hex2flt(char h, char l)
+		{
+			return ((hex2int(h) << 4) | hex2int(l)) / 255.0f;
+		}
+	}
+
+	inline glm::vec4 operator "" _color(char const * str, size_t len)
+	{
+		using namespace internal;
+		switch(len)
+		{
+			case 4: // either '#RGB' or 'RGBA'
+				if(str[0] == '#')
+					return glm::vec4(hex2flt(str[1]), hex2flt(str[2]), hex2flt(str[3]), 1.0f);
+				else
+					return glm::vec4(hex2flt(str[0]), hex2flt(str[1]), hex2flt(str[2]), hex2flt(str[3]));
+			case 3: // 'RGB'
+				return glm::vec4(hex2flt(str[0]), hex2flt(str[1]), hex2flt(str[2]), 1.0f);
+			case 6: // 'RRGGBB'
+				return glm::vec4(hex2flt(str[0], str[1]), hex2flt(str[2], str[3]), hex2flt(str[4], str[5]), 1.0f);
+			case 7: // '#RRGGBB'
+				return glm::vec4(hex2flt(str[1], str[2]), hex2flt(str[3], str[4]), hex2flt(str[5], str[6]), 1.0f);
+			case 8: // 'RRGGBBAA':
+				return glm::vec4(hex2flt(str[0], str[1]), hex2flt(str[2], str[3]), hex2flt(str[4], str[5]), hex2flt(str[6], str[7]));
+			case 9: // '#RRGGBBAA':
+				return glm::vec4(hex2flt(str[1], str[2]), hex2flt(str[3], str[4]), hex2flt(str[5], str[6]), hex2flt(str[7], str[8]));
+			default:
+				return glm::vec4(1,0,1,1);
+		}
+	}
+}
+
+#endif // COLOR_LITERALS_HPP
