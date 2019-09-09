@@ -19,7 +19,7 @@ namespace /* private */
 			for(; it != end; ++it)
 			{
 				result += it->prefix();
-				auto pos = std::strtoul((*it)[0].str().c_str(), nullptr, 10);
+				auto pos = std::strtoul((*it)[1].str().c_str(), nullptr, 10);
 				if(pos == 0)
 					result += repl;
 				else

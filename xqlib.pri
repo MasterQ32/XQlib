@@ -6,11 +6,14 @@ WARNINGS= \
 	-Wno-exit-time-destructors \
 	-Wno-global-constructors
 
-contains(XQLIB, app):     XQLIB *= sdl2 gl3w input
+contains(XQLIB, app):     XQLIB *= sdl2 gl3w input imgui
 contains(XQLIB, imgui):   XQLIB *= gl3w
-contains(XQLIB, network): XQLIB *= gsl
+contains(XQLIB, network): XQLIB *= gsl curl io
 contains(XQLIB, gl3w):    XQLIB *= gsl
 contains(XQLIB, gl3w):    XQLIB *= optional
+contains(XQLIB, math):    XQLIB *= gsl
+contains(XQLIB, io):      XQLIB *= gsl
+contains(XQLIB, io):      XQLIB *= optional
 
 CONFIG(debug, debug|release) {
 	DEFINES += DEBUG
@@ -23,6 +26,33 @@ QMAKE_LFLAGS   += $$WARNINGS
 
 # Install C++17
 include($$PWD/pri/c++17.pri)
+
+## XQLib Module List:
+# builtin packages:
+#     app
+#     network
+#     math
+#     io
+#     input
+# system packages:
+#     sdl2
+#     sdl2_image
+#     sdl2_ttf
+#     gsl
+#     stb
+#     gl3w
+#     curl
+#     enet
+#     imgui
+#     optional
+#     json
+#     guid
+#     sqlite3
+#     openssl
+#     lzma
+#     nfd
+#     zstd
+#     ode
 
 #include external modules
 contains(XQLIB, sdl2):       include($$PWD/pri/sdl2.pri)
@@ -52,6 +82,8 @@ DEPENDPATH  += $$PWD/include
 HEADERS += \
 	$$PWD/include/glm \
 	$$PWD/include/ode \
+  $$PWD/include/sdl2++/exception \
+  $$PWD/include/sdl2++/renderer \
 	$$PWD/include/xm/2d/line \
 	$$PWD/include/xm/2d/circle \
 	$$PWD/include/xm/2d/ray \
@@ -83,6 +115,7 @@ HEADERS += \
 	$$PWD/include/xio/istream \
 	$$PWD/include/xnet/socket_stream \
 	$$PWD/include/xio/iostream \
+  $$PWD/include/xstd/modern_integers \
 	$$PWD/include/xstd/multi_array \
 	$$PWD/include/xstd/unique_id \
 	$$PWD/include/xstd/dynamic_array \
@@ -117,8 +150,8 @@ HEADERS += \
 	$$PWD/include/xstd/type_traits/integer \
 	$$PWD/include/xutility/debug_camera \
 	$$PWD/include/xgraphics/shader_preprocessor \
-    $$PWD/include/xgl/query \
-    $$PWD/include/xgraphics/color_literals
+	$$PWD/include/xgl/query \
+	$$PWD/include/xgraphics/color_literals
 
 !contains(XQLIB,reference_extern): {
 	message("include xqlib source")
@@ -149,15 +182,28 @@ HEADERS += \
 		SOURCES += $$PWD/src/texture_loader.cpp
 	}
 
+	contains(XQLIB, stb): {
+		SOURCES += \
+			$$PWD/src/stb.cpp
+	}
+
+	contains(XQLIB, io): {
+		SOURCES += \
+			$$PWD/src/xio.cpp
+	}
+
+	contains(XQLIB, math): {
+		SOURCES += \
+			$$PWD/src/xm3d.cpp
+	}
+
 	SOURCES += \
 		$$PWD/src/xlog.cpp \
 		$$PWD/src/xcs.cpp \
 		$$PWD/src/xception.cpp \
-		$$PWD/src/xio.cpp \
-		$$PWD/src/xm3d.cpp \
 		$$PWD/src/xstd_format.cpp \
-		$$PWD/src/xstd_fixed.cpp \
-		$$PWD/src/debug_camera.cpp
+		$$PWD/src/debug_camera.cpp \
+		$$PWD/src/xstd_fixed.cpp
 
 	contains(XQLIB, zstd):    SOURCES += $$PWD/src/zstd.cpp
 	contains(XQLIB, lzma):    SOURCES += $$PWD/src/lzma.cpp
@@ -165,3 +211,7 @@ HEADERS += \
 	contains(XQLIB, guid):    SOURCES += $$PWD/src/guid.cpp
 	contains(XQLIB, network): SOURCES += $$PWD/src/xnet.cpp
 }
+
+SOURCES += \
+  $$PWD/src/sdl2++.cpp
+

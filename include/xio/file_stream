@@ -5,6 +5,7 @@
 #include "seekable_stream"
 #include "../xstd/resource"
 #include <cstdio>
+#include <filesystem>
 
 namespace xio
 {
@@ -13,7 +14,7 @@ namespace xio
 		xstd::resource<FILE*, fclose> handle;
 
 		explicit file_stream(char const * fileName, char const * mode);
-		explicit file_stream(std::string const & fileName, char const * mode) :
+		explicit file_stream(std::filesystem::path const & fileName, char const * mode) :
 		  file_stream(fileName.c_str(), mode)
 		{
 

@@ -1,0 +1,77 @@
+#ifndef XQLIB_XSTD_MODERN_INTEGERS_HPP
+#define XQLIB_XSTD_MODERN_INTEGERS_HPP
+
+#include <cstdint>
+#include <cstddef>
+
+namespace xstd::modern_integers
+{
+	using u8 = uint8_t;
+	using u16 = uint16_t;
+	using u32 = uint32_t;
+	using u64 = uint64_t;
+
+	using i8 = int8_t;
+	using i16 = int16_t;
+	using i32 = int32_t;
+	using i64 = int64_t;
+
+	using f32 = float;
+	using f64 = double;
+
+	using usize = size_t;
+	using isize = ptrdiff_t;
+
+	constexpr u8 operator"" _u8(unsigned long long value) {
+		return static_cast<u8>(value);
+	}
+
+	constexpr u16 operator"" _u16(unsigned long long value) {
+		return static_cast<u16>(value);
+	}
+
+	constexpr u32 operator"" _u32(unsigned long long value) {
+		return static_cast<u32>(value);
+	}
+
+	constexpr u64 operator"" _u64(unsigned long long value) {
+		return static_cast<u64>(value);
+	}
+
+	constexpr usize operator"" _usize(unsigned long long value) {
+		return static_cast<usize>(value);
+	}
+
+
+	constexpr i8 operator"" _i8(unsigned long long value) {
+		return static_cast<i8>(value);
+	}
+
+	constexpr i16 operator"" _i16(unsigned long long value) {
+		return static_cast<i16>(value);
+	}
+
+	constexpr i32 operator"" _i32(unsigned long long value) {
+		return static_cast<i32>(value);
+	}
+
+	constexpr i64 operator"" _i64(unsigned long long value) {
+		return static_cast<i64>(value);
+	}
+
+	constexpr f32 operator"" _f32(long double d) {
+		return static_cast<f32>(d);
+	}
+
+	constexpr f64 operator"" _f64(long double d) {
+		return static_cast<f64>(d);
+	}
+
+	static_assert(sizeof(usize) == sizeof(isize));
+	static_assert(sizeof(u8) == 1);
+	static_assert(sizeof(u16) == 2);
+	static_assert(sizeof(u32) == 4);
+	static_assert(sizeof(u64) == 8);
+}
+
+#endif // MODERN_INTEGERS_HPP

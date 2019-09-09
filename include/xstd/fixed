@@ -32,8 +32,9 @@ namespace xstd
 		word_t value;
 
   public: // constructors
-		constexpr fixed() : value(0) { }
-		constexpr fixed(fixed const & v) : value(v.value) { }
+		fixed() = default;
+		constexpr fixed(fixed const &) = default;
+		// constexpr fixed() : value(0) { }
 		constexpr fixed(float v)  : value(word_t(v * decimal_factor + 0.5f)) { }
 		constexpr fixed(double v) : value(word_t(v * decimal_factor + 0.5)) { }
 		constexpr fixed(int i)    : value(word_t(i) * decimal_factor) { }
@@ -43,7 +44,7 @@ namespace xstd
 
 		constexpr static fixed raw(word_t value)
 		{
-				fixed f;
+				fixed f(0);
 				f.value = value;
 				return f;
 		}
@@ -51,7 +52,7 @@ namespace xstd
 		//! returns the smallest possible value representable by fixed.
 		static constexpr fixed epsilon()
 		{
-			fixed f;
+			fixed f(0);
 			f.value = 1;
 			return f;
 		}
@@ -256,6 +257,10 @@ namespace xstd
       explicit constexpr operator double() const {
           return (this->value / double(decimal_factor));
       }
+
+	public: // assignment operators
+		constexpr fixed & operator= (fixed const & other) = default;
+
   private: // arithmetic
       constexpr void mul(fixed const & o)
       {
@@ -319,6 +324,49 @@ namespace xstd
       else
           return fixed<I, D>::raw(val.value);
   }
+}
+
+#include <limits>
+namespace std
+{
+	template<std::size_t I, std::size_t D>
+	struct numeric_limits<xstd::fixed<I,D>>
+	{
+		typedef xstd::fixed<I,D> type;
+    static constexpr bool is_specialized = true;
+
+    static constexpr type
+    min() noexcept { return type::raw(1); }
+
+    static constexpr type max() noexcept { return type::raw(std::numeric_limits<typename type::word_t>::max()); }
+
+    static constexpr type lowest() noexcept { return type::raw(std::numeric_limits<typename type::word_t>::min()); }
+
+    static constexpr int digits = I+D;
+    // static constexpr int digits10 = ;
+    //  static constexpr int max_digits10 = __glibcxx_max_digits10 (__FLT_MANT_DIG__);
+
+    static constexpr bool is_signed = true;
+    static constexpr bool is_integer = false;
+    static constexpr bool is_exact = false;
+    static constexpr int radix = 2;
+
+    static constexpr type epsilon() noexcept { return min(); }
+
+    static constexpr type round_error() noexcept { return type(0.5f); }
+
+    static constexpr bool has_infinity = false;
+    static constexpr bool has_quiet_NaN = false;
+    static constexpr bool has_signaling_NaN = false;
+
+    static constexpr bool is_iec559 = true;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = true;
+
+    static constexpr bool traps = true;
+    static constexpr bool tinyness_before = false;
+    static constexpr float_round_style round_style = round_toward_zero;
+  };
 }
 
 #endif

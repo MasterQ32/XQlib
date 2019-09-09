@@ -53,7 +53,7 @@ namespace xdb::sqlite3
 			}
 		};
 
-		xstd::resource<::sqlite3_stmt, sqlite3_finalize> ptr;
+		xstd::resource<::sqlite3_stmt*, sqlite3_finalize> ptr;
 		std::unordered_map<std::string, size_t> columns;
 
 		explicit statement(::sqlite3_stmt * stmt);
@@ -143,7 +143,7 @@ namespace xdb::sqlite3
 
 	struct db
 	{
-		xstd::resource<::sqlite3, sqlite3_close_v2> ptr;
+		xstd::resource<::sqlite3*, sqlite3_close_v2> ptr;
 
 		explicit db(char const * fileName);
 

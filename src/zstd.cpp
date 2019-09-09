@@ -14,7 +14,7 @@ int xio::compression::zstd::get_max_compression_level()
 size_t xio::compression::zstd::compress(istream & in, ostream & out, int compressionLevel)
 {
 	// reuse resources whenever possible (buffers as well as encoder)
-	xstd::resource<ZSTD_CStream, ZSTD_freeCStream> static thread_local encoder(ZSTD_createCStream());
+	xstd::resource<ZSTD_CStream*, ZSTD_freeCStream> static thread_local encoder(ZSTD_createCStream());
 	std::vector<std::byte> static thread_local src_buffer(ZSTD_CStreamInSize());
 	std::vector<std::byte> static thread_local dst_buffer(ZSTD_CStreamOutSize());
 
@@ -60,7 +60,7 @@ size_t xio::compression::zstd::compress(istream & in, ostream & out, int compres
 size_t xio::compression::zstd::decompress(istream & in, ostream & out)
 {
 	// reuse resources whenever possible (buffers as well as decoder)
-	xstd::resource<ZSTD_DStream, ZSTD_freeDStream> static thread_local decoder(ZSTD_createDStream());
+	xstd::resource<ZSTD_DStream*, ZSTD_freeDStream> static thread_local decoder(ZSTD_createDStream());
 	std::vector<std::byte> static thread_local src_buffer(ZSTD_DStreamInSize());
 	std::vector<std::byte> static thread_local dst_buffer(ZSTD_DStreamOutSize());
 
