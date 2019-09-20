@@ -80,6 +80,8 @@ namespace sdl2
 
         void readPixels(SDL_Rect region, Uint32 format, void * target, size_t pitch);
 
+        void resetClipRect();
+
         void setClipRect(SDL_Rect const & rect);
 
         void enableIntegerScale();

@@ -39,6 +39,9 @@ namespace xnet
 
 		//! writes a packet to the socket.
 		ssize_t write_to(endpoint const & target, void const * data, size_t length, int flags = 0);
+
+		//! shuts down the socket to prevent further communication.
+		bool shutdown(int how = SHUT_RDWR);
 	};
 }
 

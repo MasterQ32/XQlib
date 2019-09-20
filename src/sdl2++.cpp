@@ -1,7 +1,8 @@
 #include "../include/sdl2++/renderer"
+#include "../include/sdl2++/texture"
 #include "../include/sdl2++/exception"
 
-const char *sdl::exception::what() const noexcept
+const char *sdl2::exception::what() const noexcept
 {
     return SDL_GetError();
 }
@@ -9,13 +10,15 @@ const char *sdl::exception::what() const noexcept
 sdl2::renderer::renderer(SDL_Window *window, Uint32 flags, int index)
     : ptr(SDL_CreateRenderer(window, index, flags))
 {
-
+	if(not ptr)
+		throw sdl2::exception();
 }
 
 sdl2::renderer::renderer(SDL_Surface *surface)
     : ptr(SDL_CreateSoftwareRenderer(surface))
 {
-
+	if(not ptr)
+		throw sdl2::exception();
 }
 
 
@@ -172,6 +175,11 @@ void sdl2::renderer::readPixels(SDL_Rect region, Uint32 format, void *target, si
     SDL_RenderReadPixels(*this, &region, format, target, gsl::narrow<int>(pitch));
 }
 
+void sdl2::renderer::resetClipRect()
+{
+    SDL_RenderSetClipRect(*this, nullptr);
+}
+
 void sdl2::renderer::setClipRect(const SDL_Rect &rect)
 {
     SDL_RenderSetClipRect(*this, &rect);
@@ -216,34 +224,34 @@ void sdl2::renderer::setViewport(int x, int y, int w, int h)
 void sdl2::renderer::setBlendMode(SDL_BlendMode blendMode)
 {
     if(SDL_SetRenderDrawBlendMode(*this, blendMode) < 0)
-        throw sdl::exception();
+        throw sdl2::exception();
 }
 
 SDL_BlendMode sdl2::renderer::getBlendMode() const
 {
     SDL_BlendMode mode;
     if(SDL_GetRenderDrawBlendMode(*this, &mode) < 0)
-        throw sdl::exception();
+        throw sdl2::exception();
     return mode;
 }
 
 void sdl2::renderer::setColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     if(SDL_SetRenderDrawColor(*this, r, g, b, a) < 0)
-        throw sdl::exception();
+        throw sdl2::exception();
 }
 
 void sdl2::renderer::setColor(const SDL_Color &color)
 {
     if(SDL_SetRenderDrawColor(*this, color.r, color.g, color.b, color.a) < 0)
-        throw sdl::exception();
+        throw sdl2::exception();
 }
 
 SDL_Color sdl2::renderer::getColor() const
 {
     SDL_Color color;
     if(SDL_GetRenderDrawColor(*this, &color.r, &color.g, &color.b, &color.a) < 0)
-        throw sdl::exception();
+        throw sdl2::exception();
     return color;
 }
 
@@ -251,18 +259,140 @@ SDL_Color sdl2::renderer::getColor() const
 void sdl2::renderer::setRenderTarget(SDL_Texture *target)
 {
     if(SDL_SetRenderTarget(*this, target) < 0)
-        throw sdl::exception();
+        throw sdl2::exception();
 }
 
 SDL_Texture *sdl2::renderer::getRenderTarget() const
 {
-    SDL_GetRenderTarget(*this);
+    return SDL_GetRenderTarget(*this);
 }
 
 std::tuple<int, int> sdl2::renderer::getOutputSize() const
 {
     int w, h;
     if(SDL_GetRendererOutputSize(*this, &w, &h) < 0)
-        throw sdl::exception();
+        throw sdl2::exception();
     return std::make_tuple(w, h);
+}
+
+
+
+
+
+sdl2::texture::texture(SDL_Texture *&& init) :
+  ptr(init)
+{
+	if(not ptr)
+		throw std::invalid_argument("init must not be nullptr!");
+}
+
+sdl2::texture::texture(SDL_Renderer * ren, int w, int h, SDL_PixelFormatEnum format, SDL_TextureAccess access) :
+  ptr(SDL_CreateTexture(ren, format, access, w, h))
+{
+	if(not ptr)
+		throw sdl2::exception();
+}
+
+sdl2::texture::texture(SDL_Renderer * ren, SDL_Surface * surf) :
+  ptr(SDL_CreateTextureFromSurface(ren, surf))
+{
+	if(not ptr)
+		throw sdl2::exception();
+}
+
+std::tuple<SDL_PixelFormatEnum, SDL_TextureAccess, int, int> sdl2::texture::query() const
+{
+	Uint32      format;
+  int         access;
+  int         w;
+  int         h;
+
+	if(SDL_QueryTexture(*this, &format, &access, &w, &h) < 0)
+		throw sdl2::exception();
+
+	return std::make_tuple(SDL_PixelFormatEnum(format), SDL_TextureAccess(access), w, h);
+}
+
+
+
+void sdl2::texture::update(void * pixels, size_t pitch) {
+	if(SDL_UpdateTexture(*this, nullptr, pixels, gsl::narrow<int>(pitch)) < 0)
+		throw sdl2::exception();
+}
+
+void sdl2::texture::update(const SDL_Rect & rect, void * pixels, size_t pitch) {
+	if(SDL_UpdateTexture(*this, &rect, pixels, gsl::narrow<int>(pitch)) < 0)
+		throw sdl2::exception();
+}
+
+Uint8 sdl2::texture::getAlphaMod() const
+{
+	Uint8 alpha;
+	if(SDL_GetTextureAlphaMod(*this, &alpha) < 0)
+		throw sdl2::exception();
+	return alpha;
+}
+
+SDL_BlendMode sdl2::texture::getBlendMode() const
+{
+	SDL_BlendMode mode;
+	if(SDL_GetTextureBlendMode(*this, &mode) < 0)
+		throw sdl2::exception();
+	return mode;
+}
+
+SDL_Color sdl2::texture::getColorMod() const
+{
+	SDL_Color col = { 0, 0, 0, 0xFF };
+	if(SDL_GetTextureColorMod(*this, &col.r, &col.g, &col.b) < 0)
+		throw sdl2::exception();
+	return col;
+}
+
+std::tuple<void *, size_t> sdl2::texture::lock()
+{
+	void * _ptr;
+	int pitch;
+	if(SDL_LockTexture(*this, nullptr, &_ptr, &pitch) < 0)
+		throw sdl2::exception();
+	return std::make_tuple(_ptr, size_t(pitch));
+}
+
+std::tuple<void *, size_t> sdl2::texture::lock(const SDL_Rect & rect)
+{
+	void * _ptr;
+	int pitch;
+	if(SDL_LockTexture(*this, &rect, &_ptr, &pitch) < 0)
+		throw sdl2::exception();
+	return std::make_tuple(_ptr, size_t(pitch));
+}
+
+void sdl2::texture::setAlphaMod(Uint8 alpha)
+{
+	if(SDL_SetTextureAlphaMod(*this, alpha) < 0)
+		throw sdl2::exception();
+}
+
+void sdl2::texture::setBlendMode(SDL_BlendMode mode)
+{
+	if(SDL_SetTextureBlendMode(*this, mode) < 0)
+		throw sdl2::exception();
+}
+
+void sdl2::texture::setColorMod(Uint8 r, Uint8 g, Uint8 b)
+{
+	if(SDL_SetTextureColorMod(*this, r, g, b) < 0)
+		throw sdl2::exception();
+
+}
+
+void sdl2::texture::setColorMod(SDL_Color color)
+{
+	if(SDL_SetTextureColorMod(*this, color.r, color.g, color.b) < 0)
+		throw sdl2::exception();
+}
+
+void sdl2::texture::unlock()
+{
+	SDL_UnlockTexture(*this);
 }

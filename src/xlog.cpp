@@ -7,7 +7,11 @@
 namespace
 {
 	bool colored_output = false;
+#ifdef DEBUG
+	xlog::log_level min_level = xlog::verbose;
+#else
 	xlog::log_level min_level = xlog::message;
+#endif
 	std::mutex output_lock;
 #ifdef DEBUG
 	bool die_on_critical = true;

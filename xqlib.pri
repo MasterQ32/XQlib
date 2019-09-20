@@ -4,11 +4,14 @@ WARNINGS= \
 	-Wno-c++98-compat -Wno-c++98-compat-pedantic \
 	-Wno-padded \
 	-Wno-exit-time-destructors \
-	-Wno-global-constructors
+	-Wno-global-constructors \
+	-Werror=return-type \
+	-Wno-return-std-move-in-c++11
 
 contains(XQLIB, app):     XQLIB *= sdl2 gl3w input imgui
 contains(XQLIB, imgui):   XQLIB *= gl3w
-contains(XQLIB, network): XQLIB *= gsl curl io
+contains(XQLIB, http):    XQLIB *= network curl
+contains(XQLIB, network): XQLIB *= gsl io
 contains(XQLIB, gl3w):    XQLIB *= gsl
 contains(XQLIB, gl3w):    XQLIB *= optional
 contains(XQLIB, math):    XQLIB *= gsl
@@ -84,6 +87,7 @@ HEADERS += \
 	$$PWD/include/ode \
   $$PWD/include/sdl2++/exception \
   $$PWD/include/sdl2++/renderer \
+  $$PWD/include/sdl2++/texture \
 	$$PWD/include/xm/2d/line \
 	$$PWD/include/xm/2d/circle \
 	$$PWD/include/xm/2d/ray \
@@ -115,6 +119,8 @@ HEADERS += \
 	$$PWD/include/xio/istream \
 	$$PWD/include/xnet/socket_stream \
 	$$PWD/include/xio/iostream \
+  $$PWD/include/xstd/flexref \
+  $$PWD/include/xstd/locked_value \
   $$PWD/include/xstd/modern_integers \
 	$$PWD/include/xstd/multi_array \
 	$$PWD/include/xstd/unique_id \
@@ -197,6 +203,11 @@ HEADERS += \
 			$$PWD/src/xm3d.cpp
 	}
 
+	contains(XQLIB, sdl2): {
+    SOURCES += \
+      $$PWD/src/sdl2++.cpp
+  }
+
 	SOURCES += \
 		$$PWD/src/xlog.cpp \
 		$$PWD/src/xcs.cpp \
@@ -210,8 +221,5 @@ HEADERS += \
 	contains(XQLIB, sqlite3): SOURCES += $$PWD/src/sqlite3.cpp
 	contains(XQLIB, guid):    SOURCES += $$PWD/src/guid.cpp
 	contains(XQLIB, network): SOURCES += $$PWD/src/xnet.cpp
+	contains(XQLIB, http):    SOURCES += $$PWD/src/xnet_http.cpp
 }
-
-SOURCES += \
-  $$PWD/src/sdl2++.cpp
-

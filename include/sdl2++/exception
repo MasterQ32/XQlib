@@ -3,7 +3,7 @@
 
 #include <exception>
 
-namespace sdl
+namespace sdl2
 {
     class exception : std::exception
     {

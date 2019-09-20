@@ -13,6 +13,7 @@ namespace xio
 	{
 		istream() noexcept;
 		istream(istream const &) = delete;
+		istream(istream &&) = default;
 		virtual ~istream() noexcept;
 
 		virtual size_t read_raw(void * data, size_t length) = 0;

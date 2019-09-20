@@ -9,7 +9,7 @@ namespace xnet
 	//! A stream that allows reading data from a socket.
 	struct socket_istream : xio::istream
 	{
-		socket & sock;
+		socket * sock;
 
 		explicit socket_istream(socket & sock);
 		socket_istream(socket_istream const &) = delete;
@@ -22,7 +22,7 @@ namespace xnet
 	//! A stream that allows writing data to a socket.
 	struct socket_ostream : xio::ostream
 	{
-		socket & sock;
+		socket * sock;
 
 		explicit socket_ostream(socket & sock);
 		socket_ostream(socket_ostream const &) = delete;

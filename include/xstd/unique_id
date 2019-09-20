@@ -50,10 +50,6 @@ namespace xstd
 		constexpr bool operator<(unique_id const & other) const noexcept {
 			return this->value < other.value;
 		}
-
-		constexpr operator bool() const {
-			return not is_null();
-		}
 	public:
 		//! hash type for the unique_id. is required to use in some containers.
 		struct hash
