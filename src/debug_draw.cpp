@@ -85,6 +85,28 @@ void xgraphics::debug_draw::line(glm::vec3 const & p0, glm::vec4 const & c0, glm
 	line_vertices.push_back({ p1, c1 });
 }
 
+void xgraphics::debug_draw::circle(const glm::vec3 & center, float radius, const glm::vec4 & color)
+{
+	auto const point = [&](int a) -> glm::vec3
+	{
+		return center + glm::vec3(
+			radius * glm::sin(glm::radians<float>(a)),
+			radius * glm::cos(glm::radians<float>(a)),
+			0
+		);
+	};
+	int constexpr segments = 72;
+	int constexpr delta_angle = 360 / segments;
+
+	static_assert(segments > 0 and segments < 360);
+	static_assert((360 % segments) == 0);
+
+	for(int i = 0; i < 360; i += delta_angle)
+	{
+		line(point(i), point(i + delta_angle), color);
+	}
+}
+
 void xgraphics::debug_draw::tris(glm::vec3 const & p0, glm::vec3 const & p1, glm::vec3 const & p2, glm::vec4 const & color)
 {
 	tris_vertices.push_back({ p0, color });

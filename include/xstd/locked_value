@@ -21,7 +21,7 @@ namespace xstd
 		locked_value<underlying_type> & _value;
 		std::lock_guard<std::mutex> _guard;
 
-		value_access(locked_value<underlying_type> & val) :
+		explicit value_access(locked_value<underlying_type> & val) :
 			_value(val),
 		  _guard(val.mutex)
 		{
@@ -56,13 +56,13 @@ namespace xstd
 	public:
 		friend struct value_access<T>;
 
-		locked_value(T const & value = T { }) :
-		  value(value)
+		explicit locked_value(T const & _value = T { }) :
+		  value(_value)
 		{
 		}
 
-		locked_value(T && value) :
-		  value(std::move(value))
+		explicit locked_value(T && _value) :
+		  value(std::move(_value))
 		{
 		}
 

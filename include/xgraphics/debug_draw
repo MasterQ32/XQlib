@@ -7,6 +7,8 @@
 #include "../xgl/vertexarray"
 #include "../xgl/buffer"
 
+#include <vector>
+
 namespace xgraphics
 {
 	template<typename T>
@@ -79,6 +81,9 @@ namespace xgraphics
 		void line(glm::vec3 const & p0, glm::vec3 const & p1, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
 
 		void line(glm::vec3 const & p0, glm::vec4 const & c0, glm::vec3 const & p1, glm::vec4 const & c1);
+
+		/// paints a circle on the xy-plane
+		void circle(glm::vec3 const & center, float radius, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
 
 		void tris(glm::vec3 const & p0, glm::vec3 const & p1, glm::vec3 const & p2, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
 
