@@ -85,6 +85,9 @@ namespace xgraphics
 		/// paints a circle on the xy-plane
 		void circle(glm::vec3 const & center, float radius, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
 
+		/// paints a filled circle on the xy-plane
+		void filled_circle(glm::vec3 const & center, float radius, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
+
 		void tris(glm::vec3 const & p0, glm::vec3 const & p1, glm::vec3 const & p2, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));
 
 		void aabb(glm::vec3 const & min, glm::vec3 const & max, glm::vec4 const & color = glm::vec4(1.0, 0.0, 0.0, 1.0));

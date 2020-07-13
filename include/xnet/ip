@@ -15,6 +15,9 @@ namespace xnet
 		endpoint(sockaddr_in const & addr);
 		endpoint(sockaddr_in6 const & addr);
 
+        endpoint(in_addr const & address, uint16_t port);
+        endpoint(in6_addr const & address, uint16_t port);
+
 		sockaddr * data () {
 			return reinterpret_cast<sockaddr *>(&value);
 		}
@@ -30,6 +33,18 @@ namespace xnet
 		int family() const {
 			return value.ss_family;
 		}
+
+        in_addr get_addr_v4() const;
+
+        in6_addr get_addr_v6() const;
+
+    int port() const;
+
+        bool operator==(endpoint const & other) const ;
+
+        bool operator!=(endpoint const & other) const {
+            return not (*this == other);
+        }
 	};
 
 	//! Parses an IPv4 address in the form of `ddd.ddd.ddd.ddd` where *ddd* is
@@ -40,7 +55,7 @@ namespace xnet
 	endpoint parse_ipv6(char const * addr, int port);
 
 	//! Converts a socket address to a string representation
-	std::string to_string(endpoint const & addr);
+	std::string to_string(endpoint const & addr, bool includePort = true);
 }
 
 #endif // IP_HPP

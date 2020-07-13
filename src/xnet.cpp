@@ -2,6 +2,7 @@
 #include "../include/xnet/socket_stream"
 #include "../include/xnet/dns"
 #include "../include/xnet/ip"
+#include "../include/xnet/select"
 #include "../include/xlog"
 #include "../include/xcept"
 
@@ -50,6 +51,65 @@ xnet::endpoint::endpoint(sockaddr_in6 const & addr) :
   value(memblit<sockaddr_storage>(addr))
 {
 
+}
+
+xnet::endpoint::endpoint(const in_addr &address, uint16_t port)
+{
+    sockaddr_in * addr = reinterpret_cast<sockaddr_in*>(&value);
+    memset(addr, 0, sizeof *addr);
+    addr->sin_family = AF_INET;
+    addr->sin_port = htons(port);
+    addr->sin_addr = address;
+}
+
+xnet::endpoint::endpoint(const in6_addr &address, uint16_t port)
+{
+    sockaddr_in6 * addr = reinterpret_cast<sockaddr_in6*>(&value);
+    memset(addr, 0, sizeof *addr);
+    addr->sin6_family = AF_INET6;
+    addr->sin6_port = htons(port);
+    addr->sin6_addr = address;
+}
+
+in_addr xnet::endpoint::get_addr_v4() const
+{
+    assert(family() == AF_INET);
+    return reinterpret_cast<sockaddr_in const *>(&value)->sin_addr;
+}
+
+in6_addr xnet::endpoint::get_addr_v6() const
+{
+    assert(family() == AF_INET6);
+    return reinterpret_cast<sockaddr_in6 const *>(&value)->sin6_addr;
+}
+
+int xnet::endpoint::port() const
+{
+    switch(family())
+	{
+	    case AF_INET:
+            return ntohs(reinterpret_cast<sockaddr_in const *>(&value)->sin_port);
+
+	    case AF_INET6:
+            return ntohs(reinterpret_cast<sockaddr_in6 const *>(&value)->sin6_port);
+
+	    default:
+            xlog::log("xnet::to_string", xlog::error) << "unsupported address family: " << family();
+            return -1;
+    }
+}
+
+bool xnet::endpoint::operator==(const xnet::endpoint &other) const
+{
+    if(family() != other.family())
+        return false;
+
+    switch(family())
+	{
+    case AF_INET: return 0 == memcmp(&value, &other.value, sizeof(sockaddr_in));
+    case AF_INET6: return 0 == memcmp(&value, &other.value, sizeof(sockaddr_in6));
+    default: return false;
+    }
 }
 
 xnet::dns::dns_entry::dns_entry() :
@@ -134,7 +194,7 @@ xnet::endpoint xnet::parse_ipv6(char const * addr_str, int port)
 }
 
 
-std::string xnet::to_string(endpoint const & addr)
+std::string xnet::to_string(endpoint const & addr, bool includePort)
 {
 	std::array<char, std::max(INET6_ADDRSTRLEN, INET_ADDRSTRLEN) + 1> text;
 	switch(addr.family())
@@ -148,10 +208,13 @@ std::string xnet::to_string(endpoint const & addr)
 	        break;
 
 	    default:
-				xlog::log("xnet::to_string", xlog::error) << "unsupported address family: " << addr.family();
-				return "";
+            xlog::log("xnet::to_string", xlog::error) << "unsupported address family: " << addr.family();
+            return "";
 	}
-	return std::string(text.data());
+    if(includePort)
+        return std::string(text.data()) + ":" + std::to_string(addr.port());
+    else
+        return std::string(text.data());
 }
 
 
@@ -249,7 +312,21 @@ bool xnet::socket::shutdown(int how)
 {
 	if(::shutdown(handle, how) == -1)
 		return false;
-	return true;
+    return true;
+}
+
+bool xnet::socket::set_option(int level, int option_name, const void *option_value, socklen_t option_len)
+{
+    return setsockopt(handle, level, option_name, option_value, option_len) == 0;
+}
+
+xnet::endpoint xnet::socket::get_local_endpoint() const
+{
+    endpoint ep;
+    socklen_t size = ep.size();
+    if(getsockname(handle, ep.data(), &size) != 0)
+        ; // TODO: handle error?
+    return ep;
 }
 
 
@@ -308,4 +385,63 @@ size_t xnet::socket_istream::read_raw(void * data, size_t length)
 
 
 
+
+
+xnet::socket_set::socket_set()
+{
+    FD_ZERO(&set);
+    max_fd = 0;
+}
+
+void xnet::socket_set::add(socket const & sock)
+{
+    add(sock.handle);
+}
+
+void xnet::socket_set::add(int fd)
+{
+    max_fd = std::max(max_fd, fd);
+    FD_SET(fd, &set);
+}
+
+bool xnet::socket_set::contains(const xnet::socket &sock) const
+{
+    return contains(sock.handle);
+}
+
+bool xnet::socket_set::contains(int fd) const
+{
+    return FD_ISSET(fd, &set);
+}
+
+size_t xnet::select(
+    xstd::optional<socket_set&> read_set,
+    xstd::optional<socket_set&> write_set,
+    xstd::optional<socket_set&> error_set,
+    xstd::optional<std::chrono::microseconds> timeout
+    )
+{
+    int fd_max = 0;
+    if(read_set) fd_max =std::max(fd_max, read_set->max_fd);
+    if(write_set) fd_max =std::max(fd_max, write_set->max_fd);
+    if(error_set) fd_max =std::max(fd_max, error_set->max_fd);
+
+    timeval int_timeout;
+    if(timeout) {
+        int_timeout.tv_sec = timeout->count() / 1000000;
+        int_timeout.tv_usec = timeout->count() % 1000000;
+    }
+
+    int result = ::select(
+                fd_max + 1,
+                read_set  ? &read_set->set  : nullptr,
+                write_set ? &write_set->set : nullptr,
+                error_set ? &error_set->set : nullptr,
+                timeout ? &int_timeout : nullptr
+    );
+    if (result < 0) {
+        perror("failed to select:");
+    }
+    return size_t(result);
+}
 

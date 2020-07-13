@@ -7,6 +7,34 @@
 
 namespace xgraphics
 {
+    struct rgba {
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t a;
+    };
+
+    struct bitmap {
+        rgba * pixels;
+        size_t width;
+        size_t height;
+
+        bitmap() = delete;
+        bitmap(size_t w, size_t h, rgba * p);
+        bitmap(bitmap const &) = delete;
+        bitmap(bitmap &&);
+        ~bitmap();
+
+        rgba & get(size_t x, size_t y) {
+            return pixels[width * y + x ];
+        }
+
+        rgba const & get(size_t x, size_t y) const {
+            return pixels[width * y + x ];
+        }
+    };
+    xstd::optional<bitmap> load_bitmap(std::string const & file);
+
 	xstd::optional<xgl::texture2D> load_texture(std::string const & file);
 
 	xstd::optional<xgl::texture2D> load_texture(std::byte const * buffer, std::size_t length);

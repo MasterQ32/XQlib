@@ -33,7 +33,7 @@ namespace xnet
 	};
 
 	//! A stream that allows reading and writing data with a socket.
-	struct socket_stream : socket_ostream, socket_istream, xio::iostream
+	struct socket_stream : socket_ostream, socket_istream
 	{
 		socket_stream(socket & sock);
 		socket_stream(socket_stream const &) = delete;

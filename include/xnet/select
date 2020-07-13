@@ -1,0 +1,34 @@
+#ifndef XQLIB_XNET_SELECT_HPP
+#define XQLIB_XNET_SELECT_HPP
+
+#include "socket"
+#include "../xstd/optional"
+#include <chrono>
+
+namespace xnet
+{
+    struct socket_set
+    {
+        fd_set set;
+        int max_fd;
+
+        socket_set();
+
+        void add(socket const & sock);
+
+        void add(int fd);
+
+        bool contains(socket const & sock) const;
+
+        bool contains(int fd) const;
+    };
+
+    size_t select(
+        xstd::optional<socket_set&> read_set,
+        xstd::optional<socket_set&> write_set,
+        xstd::optional<socket_set&> error_set,
+        xstd::optional<std::chrono::microseconds> timeout
+        );
+}
+
+#endif // SELECT_HPP

@@ -52,3 +52,41 @@ xstd::optional<xgl::texture2D> xgraphics::load_texture(std::byte const * buffer,
 	};
 	return load(std::move(mem), _w, _h, "<memory>");
 }
+
+xstd::optional<xgraphics::bitmap> xgraphics::load_bitmap(const std::string &file)
+{
+    int _w, _h;
+    std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> mem {
+		stbi_load(file.c_str(), &_w, &_h, nullptr, 4),
+		stbi_image_free
+	};
+
+    if(mem != nullptr) {
+        return bitmap(_w, _h,  reinterpret_cast<rgba*>(mem.release()));
+    } else {
+        xlog::log("texture_loader", xlog::error) << "could not load bitmap " << file;
+        return xstd::nullopt;
+    }
+}
+
+xgraphics::bitmap::bitmap(size_t w, size_t h, xgraphics::rgba *p) :
+    pixels(p),
+    width(w),
+    height(h)
+{
+    assert(p != nullptr);
+}
+
+xgraphics::bitmap::bitmap(xgraphics::bitmap && other) :
+    pixels(other.pixels),
+    width(other.width),
+    height(other.height)
+{
+    other.pixels = nullptr;
+}
+
+xgraphics::bitmap::~bitmap()
+{
+    if(pixels != nullptr)
+        stbi_image_free(pixels);
+}

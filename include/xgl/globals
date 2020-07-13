@@ -1,0 +1,40 @@
+#ifndef XQLIB_XGL_GLOBALS_HPP
+#define XQLIB_XGL_GLOBALS_HPP
+
+#include <GL/gl3w.h>
+#include <glm>
+
+namespace xgl
+{
+    inline void setClearColor(float r, float g, float b, float a = 1.0f)
+    {
+        glClearColor(r,g,b,a);
+    }
+
+    inline void setClearColor(glm::vec4 color)
+    {
+        glClearColor(color.r, color.g, color.b, color.a);
+    }
+
+    inline void setClearDepth(float depth)
+    {
+        glClearDepth(1.0f);
+    }
+
+    inline void setClearStencil(uint8_t stencil)
+    {
+        glClearStencil(stencil);
+    }
+
+
+    inline void clear(bool color, bool depth, bool stencil = false)
+    {
+        glClear(0
+            | (color ? GL_COLOR_BUFFER_BIT : 0)
+            | (color ? GL_DEPTH_BUFFER_BIT : 0)
+            | (color ? GL_STENCIL_BUFFER_BIT : 0)
+        );
+    }
+}
+
+#endif // GLOBALS_HPP

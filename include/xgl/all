@@ -9,5 +9,6 @@
 #include "program"
 #include "program_pipeline"
 #include "framebuffer"
+#include "globals"
 
 #endif

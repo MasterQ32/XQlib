@@ -88,6 +88,7 @@ HEADERS += \
   $$PWD/include/sdl2++/exception \
   $$PWD/include/sdl2++/renderer \
   $$PWD/include/sdl2++/texture \
+  $$PWD/include/xgl/globals \
 	$$PWD/include/xm/2d/line \
 	$$PWD/include/xm/2d/circle \
 	$$PWD/include/xm/2d/ray \
@@ -111,6 +112,7 @@ HEADERS += \
 	$$PWD/include/xm/3d/frustum \
 	$$PWD/include/xm/3d/sphere \
 	$$PWD/include/xnet/http/client \
+  $$PWD/include/xnet/select \
 	$$PWD/include/xnet/socket \
 	$$PWD/include/xnet/http/server \
 	$$PWD/include/xnet/dns \
